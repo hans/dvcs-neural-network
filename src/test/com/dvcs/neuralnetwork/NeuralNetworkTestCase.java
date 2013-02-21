@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.dvcs.neuralnetwork.NeuralNetwork;
+import com.dvcs.tools.MatrixTools;
 
 public class NeuralNetworkTestCase {
 
@@ -14,7 +15,7 @@ public class NeuralNetworkTestCase {
 		int m = 5;
 		int n = 10;
 		
-		RealMatrix mat = NeuralNetwork.randomMatrix(m, n, 0, 1);
+		RealMatrix mat = MatrixTools.randomMatrix(m, n, 0, 1);
 		
 		Assert.assertEquals(m, mat.getRowDimension());
 		Assert.assertEquals(n, mat.getColumnDimension());
@@ -38,7 +39,7 @@ public class NeuralNetworkTestCase {
 		Double[] expected = new Double[] { 0.0, 1.0, 2.0, 3.0 };
 
 		Assert.assertArrayEquals(expected,
-				primitiveToBoxedDoubleArray(NeuralNetwork.unroll(a)));
+				primitiveToBoxedDoubleArray(MatrixTools.unroll(a)));
 	}
 
 	static Double[] primitiveToBoxedDoubleArray(double[] xs) {

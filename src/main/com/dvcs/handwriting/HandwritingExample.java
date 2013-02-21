@@ -24,6 +24,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.tools.MatlabMatrixFactory;
+import com.dvcs.tools.MatrixTools;
 
 public class HandwritingExample {
 
@@ -144,7 +145,7 @@ public class HandwritingExample {
 		updateSidebar(units, predictedClass, end - start);
 
 		// Show
-		RealMatrix image = normalize(MatlabMatrixFactory.reshape(row));
+		RealMatrix image = normalize(MatrixTools.reshape(row));
 		applet.setImage(image);
 	}
 

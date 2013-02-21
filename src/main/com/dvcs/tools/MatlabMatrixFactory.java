@@ -67,27 +67,4 @@ public class MatlabMatrixFactory {
 
 		return ret;
 	}
-
-	/**
-	 * Unroll a vector into a square matrix. The vector must have a length that
-	 * is a perfect square.
-	 */
-	public static RealMatrix reshape(double[] row) {
-		double sq = Math.sqrt(row.length);
-		if ((int) sq != sq) {
-			throw new RuntimeException(
-					"Reshape method provided with a vector whose length is not a square number");
-		}
-		
-		int length = (int) sq;
-		RealMatrix ret = new Array2DRowRealMatrix(length, length);
-		
-		for ( int i = 0; i < length; i++ ) {
-			for ( int j = 0; j < length; j++ ) {
-				ret.setEntry(i, j, row[i * length + j]);
-			}
-		}
-		
-		return ret;
-	}
 }

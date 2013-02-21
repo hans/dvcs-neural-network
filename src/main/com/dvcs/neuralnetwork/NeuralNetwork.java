@@ -5,6 +5,8 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import com.dvcs.tools.MatrixTools;
+
 public class NeuralNetwork {
 
 	final double RANDOM_WEIGHT_MATRIX_MINIMUM = 0;
@@ -15,9 +17,9 @@ public class NeuralNetwork {
 
 	public NeuralNetwork(int numLayer1Units, int numLayer2Units,
 			int numLayer3Units) {
-		Theta1 = randomMatrix(numLayer2Units, numLayer1Units + 1,
+		Theta1 = MatrixTools.randomMatrix(numLayer2Units, numLayer1Units + 1,
 				RANDOM_WEIGHT_MATRIX_MINIMUM, RANDOM_WEIGHT_MATRIX_MAXIMUM);
-		Theta2 = randomMatrix(numLayer3Units, numLayer2Units + 1,
+		Theta2 = MatrixTools.randomMatrix(numLayer3Units, numLayer2Units + 1,
 				RANDOM_WEIGHT_MATRIX_MINIMUM, RANDOM_WEIGHT_MATRIX_MAXIMUM);
 	}
 
@@ -217,8 +219,8 @@ public class NeuralNetwork {
 				Theta1.getRowDimension(), 1, Theta1.getRowDimension());
 		RealMatrix theta2Shaved = Theta2.getSubMatrix(0,
 				Theta2.getRowDimension(), 1, Theta2.getRowDimension());
-		double regularizationCost = matrixSum(squareMatrixElements(theta1Shaved))
-				+ matrixSum(squareMatrixElements(theta2Shaved));
+		double regularizationCost = MatrixTools.matrixSum(MatrixTools.squareMatrixElements(theta1Shaved))
+				+ MatrixTools.matrixSum(MatrixTools.squareMatrixElements(theta2Shaved));
 
 		double totalCost = (fittingCost + lambda / 2 * regularizationCost) / m;
 		return totalCost;
@@ -324,10 +326,10 @@ public class NeuralNetwork {
 		RealMatrix a1 = addBiasUnit(x.transpose());
 
 		RealMatrix z2 = Theta1.multiply(a1);
-		RealMatrix a2 = matrixSigmoid(addBiasUnit(z2));
+		RealMatrix a2 = MatrixTools.matrixSigmoid(addBiasUnit(z2));
 
 		RealMatrix z3 = Theta2.multiply(a2);
-		RealMatrix a3 = matrixSigmoid(z3);
+		RealMatrix a3 = MatrixTools.matrixSigmoid(z3);
 
 		return new ForwardPropagationResult(a1, z2, a2, z3, a3);
 	}
@@ -367,85 +369,6 @@ public class NeuralNetwork {
 		return maxIndex;
 	}
 
-	static double sigmoid(double x) {
-		return 1.0 / (1 + Math.exp(-x));
-	}
-
-	/**
-	 * Replace each element x of a matrix with 1/(1+e^(-x)).
-	 */
-	static RealMatrix matrixSigmoid(RealMatrix z) {
-		z = z.copy();
-
-		for (int i = 0; i < z.getRowDimension(); i++) {
-			for (int j = 0; j < z.getColumnDimension(); j++) {
-				z.setEntry(i, j, sigmoid(z.getEntry(i, j)));
-			}
-		}
-
-		return z;
-	}
-
-	static double matrixSum(RealMatrix m) {
-		double sum = 0;
-
-		for (int i = 0; i < m.getRowDimension(); i++) {
-			for (int j = 0; j < m.getColumnDimension(); j++) {
-				sum += m.getEntry(i, j);
-			}
-		}
-
-		return sum;
-	}
-
-	/**
-	 * Square each element of a matrix.
-	 */
-	static RealMatrix squareMatrixElements(RealMatrix m) {
-		m = m.copy();
-
-		for (int i = 0; i < m.getRowDimension(); i++) {
-			for (int j = 0; j < m.getColumnDimension(); j++) {
-				double val = m.getEntry(i, j);
-				m.setEntry(i, j, val * val);
-			}
-		}
-
-		return m;
-	}
-
-	/**
-	 * Replace each element $x$ of a matrix with $\log(x)$.
-	 */
-	static RealMatrix matrixLogarithm(RealMatrix z) {
-		z = z.copy();
-
-		for (int i = 0; i < z.getRowDimension(); i++) {
-			for (int j = 0; j < z.getColumnDimension(); j++) {
-				z.setEntry(i, j, Math.log(z.getEntry(i, j)));
-			}
-		}
-
-		return z;
-	}
-
-	/**
-	 * Build an `m` by `n` matrix where each cell's value is a random decimal
-	 * number between `min` (inclusive) and `max` (exclusive).
-	 */
-	static RealMatrix randomMatrix(int m, int n, double min, double max) {
-		RealMatrix ret = new Array2DRowRealMatrix(m, n);
-
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				double val = Math.random() * (max - min) + min;
-				ret.setEntry(i, j, val);
-			}
-		}
-
-		return ret;
-	}
-
 	/**
 	 * Add a bias unit to a layer (represented by a matrix). In this layer each
 	 * column represents an individual example.
@@ -462,21 +385,6 @@ public class NeuralNetwork {
 		// Place the original layer data below this first row
 		ret.setSubMatrix(a.getData(), 1, 0);
 
-		return ret;
-	}
-
-	/**
-	 * "Unroll" a matrix into a single-dimensional array.
-	 */
-	static double[] unroll(RealMatrix m) {
-		double[] ret = new double[m.getRowDimension() * m.getColumnDimension()];
-		
-		for ( int i = 0; i < m.getRowDimension(); i++ ) {
-			for ( int j = 0; j < m.getColumnDimension(); j++ ) {
-				ret[i * m.getRowDimension() + j] = m.getEntry(i, j);
-			}
-		}
-		
 		return ret;
 	}
 }

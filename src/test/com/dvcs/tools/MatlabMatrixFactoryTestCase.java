@@ -15,13 +15,13 @@ public class MatlabMatrixFactoryTestCase {
 				new double[][] { new double[] { 0.0, 1.0 },
 						new double[] { 2.0, 3.0 }});
 		
-		RealMatrix reshaped = MatlabMatrixFactory.reshape(unrolled);
+		RealMatrix reshaped = MatrixTools.reshape(unrolled);
 		Assert.assertEquals(expected, reshaped);
 	}
 	
 	@Test(expected=RuntimeException.class)
 	public void testReshapeException() {
-		MatlabMatrixFactory.reshape(new double[] { 0.0, 1.0, 2.0 });
+		MatrixTools.reshape(new double[] { 0.0, 1.0, 2.0 });
 	}
 
 }
