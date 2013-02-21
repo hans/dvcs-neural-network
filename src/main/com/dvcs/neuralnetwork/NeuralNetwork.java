@@ -353,7 +353,7 @@ public class NeuralNetwork {
 	/**
 	 * Return the index of the element in the array with the maximum value.
 	 */
-	static int maxIndex(double[] xs) {
+	public static int maxIndex(double[] xs) {
 		int maxIndex = -1;
 		double max = Double.MIN_VALUE;
 
