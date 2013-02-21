@@ -9,17 +9,6 @@ import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.tools.MatrixTools;
 
 public class NeuralNetworkTestCase {
-
-	@Test
-	public void testRandomMatrix() {
-		int m = 5;
-		int n = 10;
-		
-		RealMatrix mat = MatrixTools.randomMatrix(m, n, 0, 1);
-		
-		Assert.assertEquals(m, mat.getRowDimension());
-		Assert.assertEquals(n, mat.getColumnDimension());
-	}
 	
 	@Test
 	public void testAddBiasUnit() {
@@ -30,16 +19,6 @@ public class NeuralNetworkTestCase {
 				new double[] { 2.0, 3.0 } });
 
 		Assert.assertEquals(expected, NeuralNetwork.addBiasUnit(a));
-	}
-
-	@Test
-	public void testUnroll() {
-		RealMatrix a = new Array2DRowRealMatrix(new double[][] {
-				new double[] { 0.0, 1.0 }, new double[] { 2.0, 3.0 } });
-		Double[] expected = new Double[] { 0.0, 1.0, 2.0, 3.0 };
-
-		Assert.assertArrayEquals(expected,
-				primitiveToBoxedDoubleArray(MatrixTools.unroll(a)));
 	}
 
 	static Double[] primitiveToBoxedDoubleArray(double[] xs) {
