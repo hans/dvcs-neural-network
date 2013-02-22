@@ -20,11 +20,28 @@ public class MatrixTools {
 		}
 
 		int length = (int) sq;
-		DoubleMatrix ret = new DoubleMatrix(length, length);
+		return reshape(row, length, length);
+	}
 
-		for (int i = 0; i < length; i++) {
-			for (int j = 0; j < length; j++) {
-				ret.put(i, j, row[i * length + j]);
+	/**
+	 * Reshape a vector into a rectangular matrix.
+	 * 
+	 * @param row
+	 *            Must have a length of `m * n`
+	 * @param m
+	 * @param n
+	 */
+	public static DoubleMatrix reshape(double[] row, int m, int n) {
+		if (m * n != row.length) {
+			throw new RuntimeException(
+					"Reshape method provided with a vector whose length does not match the matrix size parameters");
+		}
+
+		DoubleMatrix ret = new DoubleMatrix(m, n);
+
+		for (int i = 0; i < m; i++) {
+			for (int j = 0; j < n; j++) {
+				ret.put(i, j, row[i * n + j]);
 			}
 		}
 
