@@ -56,10 +56,25 @@ public class MatrixTools {
 
 		for (int i = 0; i < z.getRows(); i++) {
 			for (int j = 0; j < z.getColumns(); j++) {
-				z.put(i, j, MatrixTools.sigmoid(z.get(i, j)));
+				z.put(i, j, sigmoid(z.get(i, j)));
 			}
 		}
 
+		return z;
+	}
+	
+	public static DoubleMatrix matrixSigmoidGradient(DoubleMatrix z) {
+		z = copy(z);
+		
+		for ( int i = 0; i < z.getRows(); i++ ) {
+			for ( int j = 0; j < z.getColumns(); j++ ) {
+				double val = z.get(i, j);
+				double sig = sigmoid(val);
+				
+				z.put(i, j, sig * (1 - sig));
+			}
+		}
+		
 		return z;
 	}
 

@@ -1,5 +1,7 @@
 package com.dvcs.neuralnetwork;
 
+import java.util.Arrays;
+
 import org.jblas.DoubleMatrix;
 
 import com.dvcs.tools.MatrixTools;
@@ -85,18 +87,17 @@ public class NeuralNetwork {
 
 		// Unroll Theta1 and Theta2, then concatenate. This forms our initial
 		// parameter vector.
-		double[] Theta1Vec = Theta1.toArray();
-		double[] Theta2Vec = Theta2.toArray();
-		double[] initParams = new double[Theta1Vec.length + Theta2Vec.length];
-		System.arraycopy(Theta1Vec, 0, initParams, 0, Theta1Vec.length);
-		System.arraycopy(Theta2Vec, 0, initParams, Theta1Vec.length,
-				Theta2Vec.length);
+		DoubleVector initParams = convertWeightMatricesToPoint(new DoubleMatrix[] {
+				Theta1, Theta2 });
 
 		NeuralNetworkCostFunction cost = new NeuralNetworkCostFunction(this, x,
 				y, lambda);
-		DoubleVector parameters = Fmincg.minimizeFunction(cost,
-				new DenseDoubleVector(initParams), 50, true);
-		System.out.println(parameters);
+		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams, 50,
+				true);
+
+		DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
+		Theta1 = weights[0];
+		Theta2 = weights[1];
 	}
 
 	public class WeightDeltas {
@@ -135,33 +136,29 @@ public class NeuralNetwork {
 		DoubleMatrix Delta2 = new DoubleMatrix(Theta2.getRows(),
 				Theta2.getColumns());
 
+		DoubleMatrix A1 = fResult.getA1();
 		DoubleMatrix A2 = fResult.getA2();
 		DoubleMatrix A3 = fResult.getA3();
+		DoubleMatrix Z2 = fResult.getZ2();
 
+		DoubleMatrix A1t = A1.transpose();
 		DoubleMatrix A2t = A2.transpose();
 		DoubleMatrix A3t = A3.transpose();
 
 		for (int i = 0; i < m; i++) {
 			// The first "error" values are actual residuals.
 			DoubleMatrix delta3 = A3.getColumn(i).sub(y.getColumn(i));
-			
-			/**
-			 * POOF!
-			 */
 
 			// Propagate back to the hidden layer, using error values and
 			// parameters (Theta) to build a weighted sum.
 			DoubleMatrix delta2 = Theta2.transpose().mmul(delta3);
 			// Remove the error corresponding to the bias unit and finish.
 			delta2 = delta2.getRange(1, delta2.getRows(), 0,
-					delta2.getColumns());
-			
-			/**
-			 * Aaand.. we have our deltas.
-			 */
+					delta2.getColumns()).mul(
+					MatrixTools.matrixSigmoidGradient(Z2.getColumn(i)));
 
-			Delta1 = Delta1.add(delta2.mmul(A2t.getRow(i)));
-			Delta2 = Delta2.add(delta3.mmul(A3t.getRow(i)));
+			Delta1 = Delta1.add(delta2.mmul(A1t.getRow(i)));
+			Delta2 = Delta2.add(delta3.mmul(A2t.getRow(i)));
 		}
 
 		return new WeightDeltas(Delta1, Delta2);
@@ -323,5 +320,58 @@ public class NeuralNetwork {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * A "point" provided by the optimization algorithm consists of a series of
+	 * structures, each of which contains a single parameter value. We can turn
+	 * this into a flat list of parameters.
+	 * 
+	 * Reshape the flat parameter list required by the optimization method into
+	 * the two separate matrices that it represents (i.e., Theta1 and Theta2
+	 * unrolled and then concatenated).
+	 */
+	DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point) {
+		double[] params = point.toArray();
+
+		int Theta1Length = Theta1.getRows() * Theta1.getColumns();
+		double[] Theta1Unrolled = Arrays.copyOfRange(params, 0, Theta1Length);
+		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled,
+				this.Theta1.getRows(), this.Theta1.getColumns());
+
+		int Theta2Length = Theta2.getRows() * Theta2.getColumns();
+		double[] Theta2Unrolled = Arrays.copyOfRange(params, Theta1Length,
+				Theta1Length + Theta2Length);
+		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled,
+				this.Theta2.getRows(), this.Theta2.getColumns());
+
+		return new DoubleMatrix[] { Theta1, Theta2 };
+	}
+
+	/**
+	 * Convert weight matrices into a single "point" for use with the
+	 * optimization algorithm.
+	 * 
+	 * Unroll and concatenate the two weight matrices into one long vector.
+	 */
+	DoubleVector convertWeightMatricesToPoint(DoubleMatrix[] weights) {
+		DoubleMatrix Theta1 = weights[0];
+		DoubleMatrix Theta2 = weights[1];
+
+		// Unroll the matrices.
+		double[] Theta1Unrolled = Theta1.toArray();
+		double[] Theta2Unrolled = Theta2.toArray();
+		double[] weightVector = concatenateArrays(Theta1Unrolled,
+				Theta2Unrolled);
+
+		return new DenseDoubleVector(weightVector);
+	}
+
+	private static double[] concatenateArrays(double[] a1, double[] a2) {
+		double[] result = new double[a1.length + a2.length];
+		System.arraycopy(a1, 0, result, 0, a1.length);
+		System.arraycopy(a2, 0, result, a1.length, a2.length);
+
+		return result;
 	}
 }

@@ -16,6 +16,8 @@ import de.jungblut.math.tuple.Tuple;
 
 public class NeuralNetworkCostFunction implements CostFunction {
 
+	private DoubleVector oldPoint;
+	
 	private NeuralNetwork nn;
 	private DoubleMatrix x;
 	private DoubleMatrix y;
@@ -65,7 +67,7 @@ public class NeuralNetworkCostFunction implements CostFunction {
 	 */
 	@Override
 	public Tuple<Double, DoubleVector> evaluateCost(DoubleVector point) {
-		DoubleMatrix[] weights = convertPointToWeightMatrices(point);
+		DoubleMatrix[] weights = nn.convertPointToWeightMatrices(point);
 		DoubleMatrix Theta1 = weights[0];
 		DoubleMatrix Theta2 = weights[1];
 
@@ -75,22 +77,24 @@ public class NeuralNetworkCostFunction implements CostFunction {
 
 		int m = x.getRows();
 
-		DoubleMatrix Theta1Grad = errorDeltas.getDelta1()
-				.add(regularizationDeltas.getDelta1().mul(lambda)).mul(1 / m);
-		DoubleMatrix Theta2Grad = errorDeltas.getDelta2()
-				.add(regularizationDeltas.getDelta2().mul(lambda)).mul(1 / m);
+		DoubleMatrix[] gradMatrices = new DoubleMatrix[] {
+				errorDeltas.getDelta1()
+						.add(regularizationDeltas.getDelta1().mul(lambda))
+						.mul(1 / m),
 
-		// Unroll our gradient matrices.
-		double[] Theta1GradUnrolled = Theta1Grad.toArray();
-		double[] Theta2GradUnrolled = Theta2Grad.toArray();
-		double[] gradients = concatenateArrays(Theta1GradUnrolled,
-				Theta2GradUnrolled);
+				errorDeltas.getDelta2()
+						.add(regularizationDeltas.getDelta2().mul(lambda))
+						.mul(1 / m) };
+
+		DoubleVector gradVector = nn.convertWeightMatricesToPoint(gradMatrices);
 
 		// Evaluate cost
 		double cost = this.getCost(x, fResult.getA3(), y, lambda);
+		System.out.println(cost);
+		System.out.println(Arrays.toString(gradVector.toArray()));
 
-		return new Tuple<Double, DoubleVector>(cost, new DenseDoubleVector(
-				gradients));
+		oldPoint = point;
+		return new Tuple<Double, DoubleVector>(cost, gradVector);
 	}
 
 	private WeightDeltas buildRegularizationDeltas() {
@@ -205,40 +209,6 @@ public class NeuralNetworkCostFunction implements CostFunction {
 		DoubleMatrix costPerClass = positivePart.add(negativePart).mul(-1);
 
 		return costPerClass.sum();
-	}
-
-	/**
-	 * A "point" provided by the optimization algorithm consists of a series of
-	 * structures, each of which contains a single parameter value. We can turn
-	 * this into a flat list of parameters.
-	 * 
-	 * Reshape the flat parameter list required by the optimization method into
-	 * the two separate matrices that it represents (i.e., Theta1 and Theta2
-	 * unrolled and then concatenated).
-	 */
-	private DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point) {
-		double[] params = point.toArray();
-
-		int Theta1Length = Theta1.getRows() * Theta1.getColumns();
-		double[] Theta1Unrolled = Arrays.copyOfRange(params, 0, Theta1Length);
-		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled,
-				this.Theta1.getRows(), this.Theta1.getColumns());
-
-		int Theta2Length = Theta2.getRows() * Theta2.getColumns();
-		double[] Theta2Unrolled = Arrays.copyOfRange(params, Theta1Length,
-				Theta1Length + Theta2Length);
-		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled,
-				this.Theta2.getRows(), this.Theta2.getColumns());
-
-		return new DoubleMatrix[] { Theta1, Theta2 };
-	}
-
-	private double[] concatenateArrays(double[] a1, double[] a2) {
-		double[] result = new double[a1.length + a2.length];
-		System.arraycopy(a1, 0, result, 0, a1.length);
-		System.arraycopy(a2, 0, result, a1.length, a2.length);
-
-		return result;
 	}
 
 }
