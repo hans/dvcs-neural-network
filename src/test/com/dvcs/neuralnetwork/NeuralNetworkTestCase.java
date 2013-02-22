@@ -1,34 +1,49 @@
 package com.dvcs.neuralnetwork;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.jblas.DoubleMatrix;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.dvcs.neuralnetwork.NeuralNetwork;
+import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.tools.MatrixTools;
 
 public class NeuralNetworkTestCase {
-	
+
 	@Test
 	public void testAddBiasUnit() {
-		RealMatrix a = new Array2DRowRealMatrix(new double[][] {
+		DoubleMatrix a = new DoubleMatrix(new double[][] {
 				new double[] { 0.0, 1.0 }, new double[] { 2.0, 3.0 } });
-		RealMatrix expected = new Array2DRowRealMatrix(new double[][] {
+		DoubleMatrix expected = new DoubleMatrix(new double[][] {
 				new double[] { 1.0, 1.0 }, new double[] { 0.0, 1.0 },
 				new double[] { 2.0, 3.0 } });
 
 		Assert.assertEquals(expected, NeuralNetwork.addBiasUnit(a));
 	}
 
-	static Double[] primitiveToBoxedDoubleArray(double[] xs) {
-		Double[] ys = new Double[xs.length];
+	/**
+	 * This "identity" network has the same number of units in each layer. Bias
+	 * units are unweighted. The output should be second-order sigmoid of the
+	 * input.
+	 */
+	@Test
+	public void testIdentityWeightsFeedForward() {
+		DoubleMatrix x = new DoubleMatrix(new double[][] { new double[] { 1.0,
+				1.0, 1.0 } });
 
-		for (int i = 0; i < xs.length; i++) {
-			ys[i] = xs[i];
-		}
+		DoubleMatrix Theta = new DoubleMatrix(new double[][] {
+				new double[] { 0.0, 1.0, 0.0, 0.0 },
+				new double[] { 0.0, 0.0, 1.0, 0.0 },
+				new double[] { 0.0, 0.0, 0.0, 1.0 } });
 
-		return ys;
+		NeuralNetwork network = new NeuralNetwork(Theta, Theta);
+		ForwardPropagationResult fResult = network.feedForward(x);
+
+		DoubleMatrix expectedA2 = MatrixTools.matrixSigmoid(NeuralNetwork
+				.addBiasUnit(x.transpose()));
+		DoubleMatrix expectedA3 = MatrixTools.matrixSigmoid(expectedA2
+				.getRange(1, expectedA2.getRows(), 0, expectedA2.getColumns()));
+
+		Assert.assertEquals(expectedA2, fResult.getA2());
+		Assert.assertEquals(expectedA3, fResult.getA3());
 	}
-
 }

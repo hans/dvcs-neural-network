@@ -18,8 +18,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.jblas.DoubleMatrix;
 
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
@@ -33,14 +32,18 @@ public class HandwritingExample {
 			"6", "7", "8", "9", "0" };
 
 	NeuralNetwork network;
-	RealMatrix X;
+	DoubleMatrix X;
+	DoubleMatrix Y;
 
 	JFrame frame;
 	HandwritingExampleApplet applet;
+	
 	JPanel sidebar;
-
 	JProgressBar[] classBars;
 	JLabel predictionLabel;
+	
+	JPanel trainingSidebar;
+	JLabel costLabel;
 
 	public HandwritingExample() {
 		buildNeuralNetwork();
@@ -49,7 +52,7 @@ public class HandwritingExample {
 	public void init() {
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(710, 400);
+		frame.setSize(1010, 400);
 		frame.getContentPane().setLayout(
 				new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
 
@@ -59,8 +62,10 @@ public class HandwritingExample {
 		frame.add(applet);
 
 		sidebar = initSidebar();
+		trainingSidebar = initTrainingSidebar();
 
 		frame.add(new JScrollPane(sidebar));
+		frame.add(trainingSidebar);
 		frame.setVisible(true);
 
 		// Show an example
@@ -96,6 +101,23 @@ public class HandwritingExample {
 
 		return sidebar;
 	}
+	
+	private JPanel initTrainingSidebar() {
+		JPanel sidebar = new JPanel();
+		
+		JButton trainButton = new JButton("Train");
+		trainButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				network.train(X, Y, 0.12);
+			}
+		});
+		sidebar.add(trainButton);
+		
+		costLabel = new JLabel("Cost: 0");
+		sidebar.add(costLabel);
+		
+		return sidebar;
+	}
 
 	/**
 	 * Display the result of a prediction.
@@ -103,8 +125,8 @@ public class HandwritingExample {
 	private void updateSidebar(double[] outputUnits, int predictedClass,
 			long nanoseconds) {
 		long ms = nanoseconds / 1000000L;
-		predictionLabel
-				.setText(classLabels[predictedClass] + " (" + ms + " ms)");
+		predictionLabel.setText(classLabels[predictedClass] + " (" + ms
+				+ " ms)");
 
 		for (int i = 0; i < outputUnits.length; i++) {
 			classBars[i].setValue((int) (outputUnits[i] * 1000));
@@ -112,12 +134,13 @@ public class HandwritingExample {
 	}
 
 	private void buildNeuralNetwork() {
-		RealMatrix Theta1 = null, Theta2 = null;
+		DoubleMatrix Theta1 = null, Theta2 = null;
 
 		try {
-			X = getMatrix("X");
 			Theta1 = getMatrix("Theta1");
+			X = getMatrix("X");
 			Theta2 = getMatrix("Theta2");
+			Y = getMatrix("Y");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -127,29 +150,28 @@ public class HandwritingExample {
 
 	private void nextExample() {
 		// Pick a random example
-		int i = (int) Math.round(Math.random() * X.getRowDimension());
-		double[] row = X.getRow(i);
+		int i = (int) Math.round(Math.random() * X.getRows());
 
-		// Build a RealMatrix row vector
-		RealMatrix x = new Array2DRowRealMatrix(row).transpose();
+		// Build a DoubleMatrix row vector
+		DoubleMatrix x = X.getRow(i);
 
 		// Benchmark
 		long start = System.nanoTime();
 
 		// Get the output layer (just a column vector)
 		ForwardPropagationResult fResult = network.feedForward(x);
-		double[] units = fResult.getA3().getColumn(0);
+		double[] units = fResult.getA3().getColumn(0).toArray();
 		int predictedClass = NeuralNetwork.maxIndex(units);
 		long end = System.nanoTime();
 
 		updateSidebar(units, predictedClass, end - start);
 
 		// Show
-		RealMatrix image = normalize(MatrixTools.reshape(row));
+		DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
 		applet.setImage(image);
 	}
 
-	private RealMatrix getMatrix(String matrixName) throws IOException,
+	private DoubleMatrix getMatrix(String matrixName) throws IOException,
 			RuntimeException {
 		String resourcePath = "com/dvcs/handwriting/resources";
 
@@ -168,15 +190,15 @@ public class HandwritingExample {
 	 * Normalize all elements of a matrix such that they lie in the range from 0
 	 * to 1 (inclusive on both ends).
 	 */
-	private RealMatrix normalize(RealMatrix m) {
-		m = m.copy();
+	private DoubleMatrix normalize(DoubleMatrix m) {
+		m = MatrixTools.copy(m);
 
 		double max = Double.MIN_VALUE;
 		double min = Double.MAX_VALUE;
 
-		for (int i = 0; i < m.getRowDimension(); i++) {
-			for (int j = 0; j < m.getRowDimension(); j++) {
-				double value = m.getEntry(i, j);
+		for (int i = 0; i < m.getRows(); i++) {
+			for (int j = 0; j < m.getColumns(); j++) {
+				double value = m.get(i, j);
 
 				if (value > max) {
 					max = value;
@@ -186,15 +208,15 @@ public class HandwritingExample {
 			}
 		}
 
-		for (int i = 0; i < m.getRowDimension(); i++) {
-			for (int j = 0; j < m.getColumnDimension(); j++) {
-				double value = m.getEntry(i, j);
+		for (int i = 0; i < m.getRows(); i++) {
+			for (int j = 0; j < m.getColumns(); j++) {
+				double value = m.get(i, j);
 				value = (value - min) / (max - min);
 				if (value < 0) {
 					System.out.println("--- fail");
 				}
 
-				m.setEntry(i, j, value);
+				m.put(i, j, value);
 			}
 		}
 

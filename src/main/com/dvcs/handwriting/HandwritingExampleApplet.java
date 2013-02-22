@@ -2,40 +2,29 @@ package com.dvcs.handwriting;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.GridLayout;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 
 import javax.swing.JApplet;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-
-import com.dvcs.tools.MatlabMatrixFactory;
+import org.jblas.DoubleMatrix;
 
 public class HandwritingExampleApplet extends JApplet {
 
-	RealMatrix image;
+	DoubleMatrix image;
 
 	static final int SCALE = 20;
 
-	public void setImage(RealMatrix i) {
+	public void setImage(DoubleMatrix i) {
 		image = i;
-		setSize(image.getRowDimension() * SCALE, image.getColumnDimension()
-				* SCALE);
-		
+		setSize(image.getColumns() * SCALE, image.getRows() * SCALE);
+
 		repaint();
 	}
 
 	@Override
 	public void paint(Graphics g) {
-		for (int i = 0; i < image.getRowDimension(); i++) {
-			for (int j = 0; j < image.getColumnDimension(); j++) {
-				float intensity = (float) image.getEntry(i, j);
+		for (int i = 0; i < image.getRows(); i++) {
+			for (int j = 0; j < image.getColumns(); j++) {
+				float intensity = (float) image.get(i, j);
 				Color c = new Color(intensity, intensity, intensity);
 
 				g.setColor(c);
@@ -43,5 +32,5 @@ public class HandwritingExampleApplet extends JApplet {
 			}
 		}
 	}
-	
+
 }

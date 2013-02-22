@@ -2,21 +2,14 @@ package com.dvcs.tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 
-import javax.swing.JFrame;
-
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-
-import com.dvcs.handwriting.HandwritingExampleApplet;
+import org.jblas.DoubleMatrix;
 
 public class MatlabMatrixFactory {
-	public static RealMatrix loadFromReader(Reader r) throws IOException,
+	public static DoubleMatrix loadFromReader(Reader r) throws IOException,
 			RuntimeException {
-		RealMatrix ret = null;
+		DoubleMatrix ret = null;
 		BufferedReader br = new BufferedReader(r);
 
 		// Track matrix info that should be at top of file
@@ -42,7 +35,7 @@ public class MatlabMatrixFactory {
 							"Given file is missing Matlab text header");
 
 				if (ret == null)
-					ret = new Array2DRowRealMatrix(rows, cols);
+					ret = new DoubleMatrix(rows, cols);
 
 				if (line.length() == 0) {
 					continue;
@@ -50,7 +43,7 @@ public class MatlabMatrixFactory {
 
 				String[] rowCells = line.split(" ");
 
-				// Check dimensions (accont for extra "" cell in rowCells[0])
+				// Check dimensions (account for extra "" cell in rowCells[0])
 				if (cols != rowCells.length - 1)
 					throw new RuntimeException("Row " + curRow
 							+ " has the wrong number of cells (expected "
@@ -58,7 +51,7 @@ public class MatlabMatrixFactory {
 
 				// First cell is an empty string
 				for (int i = 1; i <= cols; i++) {
-					ret.setEntry(curRow, i - 1, Double.parseDouble(rowCells[i]));
+					ret.put(curRow, i - 1, Double.parseDouble(rowCells[i]));
 				}
 
 				curRow++;
