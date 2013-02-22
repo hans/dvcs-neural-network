@@ -89,8 +89,8 @@ public class NeuralNetworkCostFunction implements CostFunction {
 		// Evaluate cost
 		double cost = this.getCost(x, fResult.getA3(), y, lambda);
 
-		return new Tuple<Double, DoubleVector>(cost,
-				new DenseDoubleVector(gradients));
+		return new Tuple<Double, DoubleVector>(cost, new DenseDoubleVector(
+				gradients));
 	}
 
 	private WeightDeltas buildRegularizationDeltas() {
@@ -221,12 +221,14 @@ public class NeuralNetworkCostFunction implements CostFunction {
 
 		int Theta1Length = Theta1.getRows() * Theta1.getColumns();
 		double[] Theta1Unrolled = Arrays.copyOfRange(params, 0, Theta1Length);
-		DoubleMatrix Theta1 = new DoubleMatrix(Theta1Unrolled);
+		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled,
+				this.Theta1.getRows(), this.Theta1.getColumns());
 
 		int Theta2Length = Theta2.getRows() * Theta2.getColumns();
 		double[] Theta2Unrolled = Arrays.copyOfRange(params, Theta1Length,
 				Theta1Length + Theta2Length);
-		DoubleMatrix Theta2 = new DoubleMatrix(Theta2Unrolled);
+		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled,
+				this.Theta2.getRows(), this.Theta2.getColumns());
 
 		return new DoubleMatrix[] { Theta1, Theta2 };
 	}
