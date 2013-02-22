@@ -37,6 +37,23 @@ public class NeuralNetwork {
 	}
 
 	/**
+	 * Train using a vector of output unit indices `y` rather than a matrix of
+	 * output unit values (as in the normal `train`).
+	 * 
+	 * This method should only be used (and really can only be used) when the
+	 * actual choices we want the network to make are *binary*: i.e., that we
+	 * ideally only want one output value to be "confident" for any given
+	 * forward propagation.
+	 * 
+	 * The `y` vector should be a list of the single units chosen for each
+	 * example.
+	 */
+	public void train(DoubleMatrix x, DoubleMatrix yVector, int k, double lambda) {
+		DoubleMatrix Y = buildYMatrix(yVector, k);
+		train(x, Y, lambda);
+	}
+
+	/**
 	 * Rebuild the weights of this network to minimize the error on the given
 	 * data set.
 	 * 
@@ -269,6 +286,40 @@ public class NeuralNetwork {
 		// Place the original layer data below this first row
 		for (int i = 0; i < a.getRows(); i++) {
 			ret.putRow(i + 1, a.getRow(i));
+		}
+
+		return ret;
+	}
+
+	/**
+	 * The output class answers are saved as a $y$ vector of length m (where
+	 * cell $i$ has a certain output unit index for example $i$). The neural
+	 * network implementation requires a full $Y$ matrix, where each example has
+	 * its own column (where each row is the value for a given unit).
+	 * 
+	 * Each column should look like the column of an identity matrix. This
+	 * function converts from the vector form to the matrix form.
+	 * 
+	 * @param yVector
+	 * @param k
+	 *            The number of output units in the network. (This determines
+	 *            the number of rows in the Y matrix.)
+	 * 
+	 *            Every value in `yVector` should be between `1` and `k`
+	 *            (inclusive).
+	 */
+	static DoubleMatrix buildYMatrix(DoubleMatrix yVector, int k) {
+		DoubleMatrix ret = new DoubleMatrix(k, yVector.getRows());
+
+		for (int i = 0; i < yVector.getRows(); i++) {
+			int exampleOutput = (int) yVector.get(i, 0);
+
+			if (exampleOutput > k) {
+				throw new RuntimeException(
+						"Example in output vector has an index greater than `k`");
+			}
+
+			ret.put(exampleOutput - 1, i, 1);
 		}
 
 		return ret;

@@ -37,11 +37,11 @@ public class HandwritingExample {
 
 	JFrame frame;
 	HandwritingExampleApplet applet;
-	
+
 	JPanel sidebar;
 	JProgressBar[] classBars;
 	JLabel predictionLabel;
-	
+
 	JPanel trainingSidebar;
 	JLabel costLabel;
 
@@ -101,21 +101,21 @@ public class HandwritingExample {
 
 		return sidebar;
 	}
-	
+
 	private JPanel initTrainingSidebar() {
 		JPanel sidebar = new JPanel();
-		
+
 		JButton trainButton = new JButton("Train");
 		trainButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				network.train(X, Y, 0.12);
+				network.train(X, Y, NUM_CLASSES, 0.12);
 			}
 		});
 		sidebar.add(trainButton);
-		
+
 		costLabel = new JLabel("Cost: 0");
 		sidebar.add(costLabel);
-		
+
 		return sidebar;
 	}
 
