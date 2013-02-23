@@ -30,6 +30,8 @@ public class HandwritingExample {
 	static final int NUM_CLASSES = 10;
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
 			"6", "7", "8", "9", "0" };
+	
+	static final double LAMBDA = 1;
 
 	NeuralNetwork network;
 	DoubleMatrix X;
@@ -108,7 +110,7 @@ public class HandwritingExample {
 		JButton trainButton = new JButton("Train");
 		trainButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				network.train(X, Y, NUM_CLASSES, 0.12);
+				network.train(X, Y, NUM_CLASSES, LAMBDA);
 			}
 		});
 		sidebar.add(trainButton);

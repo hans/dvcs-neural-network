@@ -1,7 +1,5 @@
 package com.dvcs.neuralnetwork;
 
-import java.util.Arrays;
-
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
 
@@ -10,14 +8,11 @@ import com.dvcs.neuralnetwork.NeuralNetwork.WeightDeltas;
 import com.dvcs.tools.MatrixTools;
 
 import de.jungblut.math.DoubleVector;
-import de.jungblut.math.dense.DenseDoubleVector;
 import de.jungblut.math.minimize.CostFunction;
 import de.jungblut.math.tuple.Tuple;
 
 public class NeuralNetworkCostFunction implements CostFunction {
 
-	private DoubleVector oldPoint;
-	
 	private NeuralNetwork nn;
 	private DoubleMatrix x;
 	private DoubleMatrix y;
@@ -80,20 +75,17 @@ public class NeuralNetworkCostFunction implements CostFunction {
 		DoubleMatrix[] gradMatrices = new DoubleMatrix[] {
 				errorDeltas.getDelta1()
 						.add(regularizationDeltas.getDelta1().mul(lambda))
-						.mul(1 / m),
+						.mul(1.0 / m),
 
 				errorDeltas.getDelta2()
 						.add(regularizationDeltas.getDelta2().mul(lambda))
-						.mul(1 / m) };
+						.mul(1.0 / m) };
 
 		DoubleVector gradVector = nn.convertWeightMatricesToPoint(gradMatrices);
 
 		// Evaluate cost
 		double cost = this.getCost(x, fResult.getA3(), y, lambda);
-		System.out.println(cost);
-		System.out.println(Arrays.toString(gradVector.toArray()));
-
-		oldPoint = point;
+		
 		return new Tuple<Double, DoubleVector>(cost, gradVector);
 	}
 

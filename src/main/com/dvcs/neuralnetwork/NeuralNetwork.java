@@ -141,10 +141,6 @@ public class NeuralNetwork {
 		DoubleMatrix A3 = fResult.getA3();
 		DoubleMatrix Z2 = fResult.getZ2();
 
-		DoubleMatrix A1t = A1.transpose();
-		DoubleMatrix A2t = A2.transpose();
-		DoubleMatrix A3t = A3.transpose();
-
 		for (int i = 0; i < m; i++) {
 			// The first "error" values are actual residuals.
 			DoubleMatrix delta3 = A3.getColumn(i).sub(y.getColumn(i));
@@ -157,8 +153,11 @@ public class NeuralNetwork {
 					delta2.getColumns()).mul(
 					MatrixTools.matrixSigmoidGradient(Z2.getColumn(i)));
 
-			Delta1 = Delta1.add(delta2.mmul(A1t.getRow(i)));
-			Delta2 = Delta2.add(delta3.mmul(A2t.getRow(i)));
+			DoubleMatrix Delta1Delta = delta2.mmul(A1.getColumn(i).transpose());
+			DoubleMatrix Delta2Delta = delta3.mmul(A2.getColumn(i).transpose());
+			
+			Delta1 = Delta1.add(Delta1Delta);
+			Delta2 = Delta2.add(Delta2Delta);
 		}
 
 		return new WeightDeltas(Delta1, Delta2);

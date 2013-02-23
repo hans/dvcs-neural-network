@@ -7,6 +7,8 @@ import org.junit.Test;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.tools.MatrixTools;
 
+import de.jungblut.math.dense.DenseDoubleVector;
+
 public class NeuralNetworkTestCase {
 
 	@Test
@@ -45,5 +47,18 @@ public class NeuralNetworkTestCase {
 
 		Assert.assertEquals(expectedA2, fResult.getA2());
 		Assert.assertEquals(expectedA3, fResult.getA3());
+	}
+
+	@Test
+	public void testBuildYMatrix() {
+		DoubleMatrix yVector = new DoubleMatrix(new double[][] {
+				new double[] { 1.0 }, new double[] { 3.0 },
+				new double[] { 2.0 } });
+
+		DoubleMatrix expected = new DoubleMatrix(new double[][] {
+				new double[] { 1.0, 0.0, 0.0 }, new double[] { 0.0, 0.0, 1.0 },
+				new double[] { 0.0, 1.0, 0.0 } });
+
+		Assert.assertEquals(expected, NeuralNetwork.buildYMatrix(yVector, 3));
 	}
 }
