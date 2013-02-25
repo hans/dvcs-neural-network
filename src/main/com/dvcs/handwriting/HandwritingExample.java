@@ -110,7 +110,7 @@ public class HandwritingExample {
 		JButton trainButton = new JButton("Train");
 		trainButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				network.train(X, Y, NUM_CLASSES, LAMBDA);
+				network.train(X, Y, NUM_CLASSES, LAMBDA, null);
 			}
 		});
 		sidebar.add(trainButton);

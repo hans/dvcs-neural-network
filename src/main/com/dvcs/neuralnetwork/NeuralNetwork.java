@@ -9,6 +9,7 @@ import com.dvcs.tools.MatrixTools;
 import de.jungblut.math.DoubleVector;
 import de.jungblut.math.dense.DenseDoubleVector;
 import de.jungblut.math.minimize.Fmincg;
+import de.jungblut.math.minimize.MinimizerListener;
 
 public class NeuralNetwork {
 
@@ -50,9 +51,10 @@ public class NeuralNetwork {
 	 * The `y` vector should be a list of the single units chosen for each
 	 * example.
 	 */
-	public void train(DoubleMatrix x, DoubleMatrix yVector, int k, double lambda) {
+	public void train(DoubleMatrix x, DoubleMatrix yVector, int k,
+			double lambda, MinimizerListener listener) {
 		DoubleMatrix Y = buildYMatrix(yVector, k);
-		train(x, Y, lambda);
+		train(x, Y, lambda, listener);
 	}
 
 	/**
@@ -70,8 +72,12 @@ public class NeuralNetwork {
 	 *            column is an example)
 	 * @param lambda
 	 *            Regularization parameter
+	 * @param listener
+	 *            A listener which will receive information about each
+	 *            minimization iteration
 	 */
-	public void train(DoubleMatrix x, DoubleMatrix y, double lambda) {
+	public void train(DoubleMatrix x, DoubleMatrix y, double lambda,
+			MinimizerListener listener) {
 		if (x.getRows() != y.getColumns()) {
 			throw new RuntimeException(
 					"Output matrix ss do not correspond with those of the example matrix");
@@ -93,7 +99,7 @@ public class NeuralNetwork {
 		NeuralNetworkCostFunction cost = new NeuralNetworkCostFunction(this, x,
 				y, lambda);
 		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams, 50,
-				true);
+				listener);
 
 		DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
 		Theta1 = weights[0];
@@ -155,7 +161,7 @@ public class NeuralNetwork {
 
 			DoubleMatrix Delta1Delta = delta2.mmul(A1.getColumn(i).transpose());
 			DoubleMatrix Delta2Delta = delta3.mmul(A2.getColumn(i).transpose());
-			
+
 			Delta1 = Delta1.add(Delta1Delta);
 			Delta2 = Delta2.add(Delta2Delta);
 		}

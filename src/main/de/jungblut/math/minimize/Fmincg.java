@@ -84,7 +84,7 @@ public final class Fmincg implements Minimizer {
    * @return a vector containing the optimized input
    */
   public static DoubleVector minimizeFunction(CostFunction f,
-      DoubleVector pInput, int length, boolean verbose) {
+      DoubleVector pInput, int length, MinimizerListener listener) {
 
     DoubleVector input = pInput;
     int M = 0;
@@ -214,8 +214,10 @@ public final class Fmincg implements Minimizer {
       if (success == 1) { // if line search succeeded
         f1 = f2;
         fX = new DenseDoubleVector(fX.toArray(), f1);
-        if (verbose)
-          System.out.print("Interation " + i + " | Cost: " + f1 + "\r");
+        
+        if (listener != null)
+        	listener.minimizationIterationFinished(i, f1, input);
+        
         // Polack-Ribiere direction: s =
         // (df2'*df2-df1'*df2)/(df1'*df1)*s - df2;
         final double numerator = (df2.dot(df2) - df1.dot(df2)) / df1.dot(df1);
@@ -257,8 +259,8 @@ public final class Fmincg implements Minimizer {
 
   @Override
   public final DoubleVector minimize(CostFunction f, DoubleVector theta,
-      int maxIterations, boolean verbose) {
-    return minimizeFunction(f, theta, maxIterations, verbose);
+      int maxIterations, MinimizerListener listener) {
+    return minimizeFunction(f, theta, maxIterations, listener);
   }
 
 }
