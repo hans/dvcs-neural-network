@@ -327,6 +327,11 @@ public class NeuralNetwork {
 		return ret;
 	}
 
+	DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point) {
+		return convertPointToWeightMatrices(point, Theta1.getRows(),
+				Theta1.getColumns(), Theta2.getRows(), Theta2.getColumns());
+	}
+
 	/**
 	 * A "point" provided by the optimization algorithm consists of a series of
 	 * structures, each of which contains a single parameter value. We can turn
@@ -336,19 +341,20 @@ public class NeuralNetwork {
 	 * the two separate matrices that it represents (i.e., Theta1 and Theta2
 	 * unrolled and then concatenated).
 	 */
-	DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point) {
+	static DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point,
+			int Theta1Rows, int Theta1Cols, int Theta2Rows, int Theta2Cols) {
 		double[] params = point.toArray();
 
-		int Theta1Length = Theta1.getRows() * Theta1.getColumns();
+		int Theta1Length = Theta1Rows * Theta1Cols;
 		double[] Theta1Unrolled = Arrays.copyOfRange(params, 0, Theta1Length);
-		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled,
-				this.Theta1.getRows(), this.Theta1.getColumns());
+		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled, Theta1Rows,
+				Theta1Cols);
 
-		int Theta2Length = Theta2.getRows() * Theta2.getColumns();
+		int Theta2Length = Theta2Rows * Theta2Cols;
 		double[] Theta2Unrolled = Arrays.copyOfRange(params, Theta1Length,
 				Theta1Length + Theta2Length);
-		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled,
-				this.Theta2.getRows(), this.Theta2.getColumns());
+		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled, Theta2Rows,
+				Theta2Cols);
 
 		return new DoubleMatrix[] { Theta1, Theta2 };
 	}
@@ -359,7 +365,7 @@ public class NeuralNetwork {
 	 * 
 	 * Unroll and concatenate the two weight matrices into one long vector.
 	 */
-	DoubleVector convertWeightMatricesToPoint(DoubleMatrix[] weights) {
+	static DoubleVector convertWeightMatricesToPoint(DoubleMatrix[] weights) {
 		DoubleMatrix Theta1 = weights[0];
 		DoubleMatrix Theta2 = weights[1];
 
