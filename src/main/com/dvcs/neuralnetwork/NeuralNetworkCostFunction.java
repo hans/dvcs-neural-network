@@ -120,7 +120,7 @@ public class NeuralNetworkCostFunction implements CostFunction {
 	 * @param lambda
 	 *            Regularization parameter
 	 */
-	private double getCost(DoubleMatrix x, DoubleMatrix outputLayer,
+	public double getCost(DoubleMatrix x, DoubleMatrix outputLayer,
 			DoubleMatrix y, double lambda) {
 		/**
 		 * Cost function: fitting
