@@ -98,8 +98,8 @@ public class NeuralNetwork {
 
 		NeuralNetworkCostFunction cost = new NeuralNetworkCostFunction(this, x,
 				y, lambda);
-		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams, 50,
-				listener);
+		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams,
+				100, listener);
 
 		DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
 		Theta1 = weights[0];

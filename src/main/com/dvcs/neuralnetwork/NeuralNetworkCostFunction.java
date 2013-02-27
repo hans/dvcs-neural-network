@@ -85,7 +85,7 @@ public class NeuralNetworkCostFunction implements CostFunction {
 
 		// Evaluate cost
 		double cost = this.getCost(x, fResult.getA3(), y, lambda);
-		
+
 		return new Tuple<Double, DoubleVector>(cost, gradVector);
 	}
 

@@ -26,13 +26,16 @@ import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.tools.MatlabMatrixFactory;
 import com.dvcs.tools.MatrixTools;
 
+import de.jungblut.math.DoubleVector;
+import de.jungblut.math.minimize.MinimizerListener;
+
 public class HandwritingExample {
 
 	static final int NUM_CLASSES = 10;
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
 			"6", "7", "8", "9", "0" };
-	
-	static final double LAMBDA = 1;
+
+	static final double LAMBDA = 0.75;
 
 	NeuralNetwork network;
 	DoubleMatrix X;
@@ -112,7 +115,7 @@ public class HandwritingExample {
 			public void minimizationIterationFinished(int n, final double cost,
 					DoubleVector parameters) {
 				System.out.println("hier");
-				
+
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						costLabel.setText("Cost: " + cost);
@@ -125,11 +128,11 @@ public class HandwritingExample {
 		trainButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				trainButton.setEnabled(false);
-				
+
 				new Thread() {
 					public void run() {
 						network.train(X, Y, NUM_CLASSES, LAMBDA, listener);
-						
+
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 								trainButton.setEnabled(true);
