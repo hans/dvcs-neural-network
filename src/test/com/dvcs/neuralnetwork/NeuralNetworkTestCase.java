@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.tools.MatrixTools;
 
+import de.jungblut.math.DoubleVector;
 import de.jungblut.math.dense.DenseDoubleVector;
 
 public class NeuralNetworkTestCase {
@@ -60,5 +61,39 @@ public class NeuralNetworkTestCase {
 				new double[] { 0.0, 1.0, 0.0 } });
 
 		Assert.assertEquals(expected, NeuralNetwork.buildYMatrix(yVector, 3));
+	}
+
+	@Test
+	public void testConvertPointToWeightMatrices() {
+		DoubleVector in = new DenseDoubleVector(new double[] { 1, 3, 2, 1, 3,
+				2, 4, 8, 0, 5, 9, 10 });
+
+		DoubleMatrix Theta1 = new DoubleMatrix(new double[][] {
+				new double[] { 1, 2, 3 }, new double[] { 3, 1, 2 } });
+		DoubleMatrix Theta2 = new DoubleMatrix(new double[][] {
+				new double[] { 4, 5 }, new double[] { 8, 9 },
+				new double[] { 0, 10 } });
+
+		DoubleMatrix[] out = NeuralNetwork.convertPointToWeightMatrices(in,
+				Theta1.getRows(), Theta1.getColumns(), Theta2.getRows(),
+				Theta2.getColumns());
+		Assert.assertArrayEquals(new DoubleMatrix[] { Theta1, Theta2 }, out);
+	}
+
+	@Test
+	public void testConvertWeightMatricesToPoint() {
+		DoubleMatrix Theta1 = new DoubleMatrix(new double[][] {
+				new double[] { 1, 2, 3 }, new double[] { 3, 1, 2 } });
+		DoubleMatrix Theta2 = new DoubleMatrix(new double[][] {
+				new double[] { 4, 5 }, new double[] { 8, 9 },
+				new double[] { 0, 10 } });
+
+		DoubleVector expected = new DenseDoubleVector(new double[] { 1, 3, 2,
+				1, 3, 2, 4, 8, 0, 5, 9, 10 });
+
+		Assert.assertEquals(
+				expected,
+				NeuralNetwork.convertWeightMatricesToPoint(new DoubleMatrix[] {
+						Theta1, Theta2 }));
 	}
 }

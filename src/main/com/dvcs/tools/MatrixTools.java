@@ -24,7 +24,8 @@ public class MatrixTools {
 	}
 
 	/**
-	 * Reshape a vector into a rectangular matrix.
+	 * Reshape a vector into a rectangular matrix. Expects the vector to be read
+	 * down columns first, and then over by row.
 	 * 
 	 * @param row
 	 *            Must have a length of `m * n`
@@ -39,9 +40,9 @@ public class MatrixTools {
 
 		DoubleMatrix ret = new DoubleMatrix(m, n);
 
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				ret.put(i, j, row[i * n + j]);
+		for (int j = 0; j < n; j++) {
+			for (int i = 0; i < m; i++) {
+				ret.put(i, j, row[j * m + i]);
 			}
 		}
 
@@ -62,19 +63,19 @@ public class MatrixTools {
 
 		return z;
 	}
-	
+
 	public static DoubleMatrix matrixSigmoidGradient(DoubleMatrix z) {
 		z = copy(z);
-		
-		for ( int i = 0; i < z.getRows(); i++ ) {
-			for ( int j = 0; j < z.getColumns(); j++ ) {
+
+		for (int i = 0; i < z.getRows(); i++) {
+			for (int j = 0; j < z.getColumns(); j++) {
 				double val = z.get(i, j);
 				double sig = sigmoid(val);
-				
+
 				z.put(i, j, sig * (1 - sig));
 			}
 		}
-		
+
 		return z;
 	}
 
