@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import org.jblas.DoubleMatrix;
 
@@ -107,10 +108,35 @@ public class HandwritingExample {
 	private JPanel initTrainingSidebar() {
 		JPanel sidebar = new JPanel();
 
-		JButton trainButton = new JButton("Train");
+		final MinimizerListener listener = new MinimizerListener() {
+			public void minimizationIterationFinished(int n, final double cost,
+					DoubleVector parameters) {
+				System.out.println("hier");
+				
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						costLabel.setText("Cost: " + cost);
+					}
+				});
+			}
+		};
+
+		final JButton trainButton = new JButton("Train");
 		trainButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				network.train(X, Y, NUM_CLASSES, LAMBDA, null);
+				trainButton.setEnabled(false);
+				
+				new Thread() {
+					public void run() {
+						network.train(X, Y, NUM_CLASSES, LAMBDA, listener);
+						
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								trainButton.setEnabled(true);
+							}
+						});
+					}
+				}.start();
 			}
 		});
 		sidebar.add(trainButton);
