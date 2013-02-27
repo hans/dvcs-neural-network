@@ -110,15 +110,15 @@ public class HandwritingExample {
 
 	private JPanel initTrainingSidebar() {
 		JPanel sidebar = new JPanel();
+		sidebar.setLayout(new GridLayout(0, 1));
 
 		final MinimizerListener listener = new MinimizerListener() {
-			public void minimizationIterationFinished(int n, final double cost,
-					DoubleVector parameters) {
-				System.out.println("hier");
-
+			public void minimizationIterationFinished(final int n,
+					final double cost, DoubleVector parameters) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						costLabel.setText("Cost: " + cost);
+						costLabel.setText("Iteration " + n + "\n" + "Cost: "
+								+ String.format("%.04f", cost));
 					}
 				});
 			}
@@ -144,7 +144,7 @@ public class HandwritingExample {
 		});
 		sidebar.add(trainButton);
 
-		costLabel = new JLabel("Cost: 0");
+		costLabel = new JLabel("Cost: 0.0000");
 		sidebar.add(costLabel);
 
 		return sidebar;
