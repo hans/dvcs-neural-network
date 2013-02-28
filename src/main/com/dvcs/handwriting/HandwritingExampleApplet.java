@@ -14,7 +14,7 @@ public class HandwritingExampleApplet extends JApplet {
 	static final int SCALE = 20;
 
 	public void setImage(DoubleMatrix i) {
-		image = i;
+		image = i.transpose();
 		setSize(image.getColumns() * SCALE, image.getRows() * SCALE);
 
 		repaint();
