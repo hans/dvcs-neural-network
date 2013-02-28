@@ -176,9 +176,9 @@ public class HandwritingExample {
 	 */
 	private void updateSidebar(double[] outputUnits, int predictedClass,
 			long nanoseconds) {
-		long ms = nanoseconds / 1000000L;
-		predictionLabel.setText(classLabels[predictedClass] + " (" + ms
-				+ " ms)");
+		long microseconds = nanoseconds / 1000L;
+		predictionLabel.setText(classLabels[predictedClass] + " ("
+				+ microseconds + " micros)");
 
 		for (int i = 0; i < outputUnits.length; i++) {
 			classBars[i].setValue((int) (outputUnits[i] * 1000));
