@@ -52,9 +52,10 @@ public class NeuralNetwork {
 	 * example.
 	 */
 	public void train(DoubleMatrix x, DoubleMatrix yVector, int k,
-			double lambda, MinimizerListener listener) {
+			double lambda, MinimizerListener listener,
+			boolean updateThetasDuringOptimization) {
 		DoubleMatrix Y = buildYMatrix(yVector, k);
-		train(x, Y, lambda, listener);
+		train(x, Y, lambda, listener, updateThetasDuringOptimization);
 	}
 
 	/**
@@ -75,9 +76,15 @@ public class NeuralNetwork {
 	 * @param listener
 	 *            A listener which will receive information about each
 	 *            minimization iteration
+	 * @param updateThetasDuringOptimization
+	 *            If true, this network's parameters will update in sync with
+	 *            the optimization steps. (The network can predict in real time
+	 *            as it self-optimizes.) If false, the network's parameters
+	 *            won't be updated until optimization has finished.
 	 */
 	public void train(DoubleMatrix x, DoubleMatrix y, double lambda,
-			MinimizerListener listener) {
+			final MinimizerListener listener,
+			boolean updateThetasDuringOptimization) {
 		if (x.getRows() != y.getColumns()) {
 			throw new RuntimeException(
 					"Output matrix ss do not correspond with those of the example matrix");
@@ -91,6 +98,25 @@ public class NeuralNetwork {
 					"Given output matrix ss do not correspond with those of the actual output matrix produced by the network");
 		}
 
+		MinimizerListener ourListener = null;
+		if (updateThetasDuringOptimization) {
+			ourListener = new MinimizerListener() {
+				public void minimizationIterationFinished(int n, double cost,
+						DoubleVector parameters) {
+					DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
+					Theta1 = weights[0];
+					Theta2 = weights[1];
+
+					if (listener != null) {
+						listener.minimizationIterationFinished(n, cost,
+								parameters);
+					}
+				}
+			};
+		} else {
+			ourListener = listener;
+		}
+
 		// Unroll Theta1 and Theta2, then concatenate. This forms our initial
 		// parameter vector.
 		DoubleVector initParams = convertWeightMatricesToPoint(new DoubleMatrix[] {
@@ -99,7 +125,7 @@ public class NeuralNetwork {
 		NeuralNetworkCostFunction cost = new NeuralNetworkCostFunction(this, x,
 				y, lambda);
 		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams,
-				100, listener);
+				100, ourListener);
 
 		DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
 		Theta1 = weights[0];

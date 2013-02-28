@@ -152,7 +152,7 @@ public class HandwritingExample {
 
 				new Thread() {
 					public void run() {
-						network.train(X, Y, NUM_CLASSES, LAMBDA, listener);
+						network.train(X, Y, NUM_CLASSES, LAMBDA, listener, true);
 
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
