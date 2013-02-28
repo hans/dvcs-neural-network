@@ -18,6 +18,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.jblas.DoubleMatrix;
 
@@ -51,6 +52,13 @@ public class HandwritingExample {
 	JPanel trainingSidebar;
 	JLabel costLabel;
 
+	ActionListener timerAction = new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			nextExample();
+		}
+	};
+	Timer timer;
+
 	public HandwritingExample() {
 		buildNeuralNetwork();
 	}
@@ -74,6 +82,8 @@ public class HandwritingExample {
 		frame.add(trainingSidebar);
 		frame.setVisible(true);
 
+		timer = new Timer(500, timerAction);
+
 		// Show an example
 		nextExample();
 	}
@@ -92,10 +102,21 @@ public class HandwritingExample {
 		});
 		sidebar.add(nextButton);
 
+		JButton cycleButton = new JButton("Cycle examples");
+		cycleButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cycleExamples();
+			}
+		});
+		sidebar.add(cycleButton);
+
 		predictionLabel = new JLabel();
 		predictionLabel.setFont(new Font("Sans Serif", Font.PLAIN, 18));
 		predictionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		sidebar.add(predictionLabel);
+
+		// hack
+		sidebar.add(new JLabel(""));
 
 		classBars = new JProgressBar[NUM_CLASSES];
 		for (int i = 0; i < NUM_CLASSES; i++) {
@@ -177,6 +198,10 @@ public class HandwritingExample {
 		}
 
 		network = new NeuralNetwork(Theta1, Theta2);
+	}
+
+	private void cycleExamples() {
+		timer.start();
 	}
 
 	private void nextExample() {
