@@ -476,4 +476,8 @@ public class NeuralNetwork {
 
 		return result;
 	}
+
+	public DoubleMatrix[] getThetas() {
+		return Thetas;
+	}
 }

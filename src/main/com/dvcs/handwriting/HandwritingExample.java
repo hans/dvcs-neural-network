@@ -110,6 +110,17 @@ public class HandwritingExample {
 		});
 		sidebar.add(cycleButton);
 
+		JButton showHiddenLayersButton = new JButton("Show hidden layers");
+		showHiddenLayersButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showHiddenLayer();
+			}
+		});
+		sidebar.add(showHiddenLayersButton);
+
+		JButton placeholderButton = new JButton("");
+		sidebar.add(placeholderButton);
+
 		predictionLabel = new JLabel();
 		predictionLabel.setFont(new Font("Sans Serif", Font.PLAIN, 18));
 		predictionLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -224,6 +235,18 @@ public class HandwritingExample {
 
 		// Show
 		DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
+		applet.setImage(image);
+	}
+
+	private void showHiddenLayer() {
+		DoubleMatrix firstHiddenLayer = network.getThetas()[0];
+
+		// Remove column corresponding to bias unit
+		firstHiddenLayer = firstHiddenLayer.getRange(0,
+				firstHiddenLayer.getRows(), 1, firstHiddenLayer.getColumns());
+
+		DoubleMatrix image = normalize(MatrixTools.reshape(firstHiddenLayer
+				.getRow(0).toArray()));
 		applet.setImage(image);
 	}
 
