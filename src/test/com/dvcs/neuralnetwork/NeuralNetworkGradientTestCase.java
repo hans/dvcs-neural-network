@@ -1,7 +1,5 @@
 package com.dvcs.neuralnetwork;
 
-import java.util.Arrays;
-
 import junit.framework.Assert;
 
 import org.jblas.DoubleMatrix;
@@ -51,7 +49,7 @@ public class NeuralNetworkGradientTestCase {
 
 		Y = NeuralNetwork.buildYMatrix(y, NUM_LABELS);
 
-		nn = new NeuralNetwork(Theta1, Theta2);
+		nn = new NeuralNetwork(new DoubleMatrix[] { Theta1, Theta2 });
 	}
 
 	@Test
@@ -63,7 +61,7 @@ public class NeuralNetworkGradientTestCase {
 						Theta2 });
 
 		Tuple<Double, DoubleVector> result = costFunction.evaluateCost(params);
-		
+
 		DoubleVector resultVector = result.getSecond();
 		DoubleVector numericalGradient = computeNumericalGradient(costFunction,
 				params);

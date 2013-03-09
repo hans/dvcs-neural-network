@@ -4,7 +4,6 @@ import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
 
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
-import com.dvcs.neuralnetwork.NeuralNetwork.WeightDeltas;
 import com.dvcs.tools.MatrixTools;
 
 import de.jungblut.math.DoubleVector;
@@ -19,20 +18,12 @@ public class NeuralNetworkCostFunction implements CostFunction {
 	private double lambda;
 
 	/**
-	 * This weight matrix will begin with the same value as assigned in the
-	 * provided neural network. It will be optimized and repeatedly fed back to
-	 * the network (while the network's actual weights remain unmodified during
-	 * the optimization process).
+	 * These weight matrices will begin with the same value as assigned in the
+	 * provided neural network. They will be optimized and repeatedly fed back
+	 * to the network (while the network's actual weights remain unmodified
+	 * during the optimization process).
 	 */
-	private DoubleMatrix Theta1;
-
-	/**
-	 * This weight matrix will begin with the same value as assigned in the
-	 * provided neural network. It will be optimized and repeatedly fed back to
-	 * the network (while the network's actual weights remain unmodified during
-	 * the optimization process).
-	 */
-	private DoubleMatrix Theta2;
+	private DoubleMatrix[] Thetas;
 
 	/**
 	 * @param x
@@ -53,8 +44,10 @@ public class NeuralNetworkCostFunction implements CostFunction {
 		this.y = y;
 		this.lambda = lambda;
 
-		Theta1 = MatrixTools.copy(nn.Theta1);
-		Theta2 = MatrixTools.copy(nn.Theta2);
+		Thetas = new DoubleMatrix[nn.Thetas.length];
+		for (int i = 0; i < Thetas.length; i++) {
+			Thetas[i] = MatrixTools.copy(nn.Thetas[i]);
+		}
 	}
 
 	/**
@@ -62,45 +55,43 @@ public class NeuralNetworkCostFunction implements CostFunction {
 	 */
 	@Override
 	public Tuple<Double, DoubleVector> evaluateCost(DoubleVector point) {
-		DoubleMatrix[] weights = nn.convertPointToWeightMatrices(point);
-		DoubleMatrix Theta1 = weights[0];
-		DoubleMatrix Theta2 = weights[1];
+		DoubleMatrix[] Thetas = nn.convertPointToWeightMatrices(point);
 
-		ForwardPropagationResult fResult = nn.feedForward(x, Theta1, Theta2);
-		WeightDeltas errorDeltas = nn.backpropagate(fResult, y, Theta1, Theta2);
-		WeightDeltas regularizationDeltas = buildRegularizationDeltas();
+		ForwardPropagationResult fResult = nn.feedForward(x, Thetas);
+		DoubleMatrix[] errorDeltas = nn.backpropagate(fResult, y, Thetas);
+		DoubleMatrix[] regularizationDeltas = buildRegularizationDeltas(Thetas);
 
 		int m = x.getRows();
 
-		DoubleMatrix[] gradMatrices = new DoubleMatrix[] {
-				errorDeltas.getDelta1()
-						.add(regularizationDeltas.getDelta1().mul(lambda))
-						.mul(1.0 / m),
-
-				errorDeltas.getDelta2()
-						.add(regularizationDeltas.getDelta2().mul(lambda))
-						.mul(1.0 / m) };
+		DoubleMatrix[] gradMatrices = new DoubleMatrix[Thetas.length];
+		for (int i = 0; i < Thetas.length; i++) {
+			gradMatrices[i] = errorDeltas[i].add(
+					regularizationDeltas[i].mul(lambda)).mul(1.0 / m);
+		}
 
 		DoubleVector gradVector = nn.convertWeightMatricesToPoint(gradMatrices);
 
 		// Evaluate cost
-		double cost = this.getCost(x, fResult.getA3(), y, lambda);
+		double cost = this.getCost(x, Thetas, fResult.getOutputLayer(), y, lambda);
 
 		return new Tuple<Double, DoubleVector>(cost, gradVector);
 	}
 
-	private WeightDeltas buildRegularizationDeltas() {
-		DoubleMatrix Delta1 = MatrixTools.copy(Theta1);
-		DoubleMatrix Delta2 = MatrixTools.copy(Theta2);
+	private DoubleMatrix[] buildRegularizationDeltas(DoubleMatrix[] Thetas) {
+		DoubleMatrix[] Deltas = new DoubleMatrix[Thetas.length];
 
-		// Ignore bias weights
-		for (DoubleMatrix m : new DoubleMatrix[] { Delta1, Delta2 }) {
-			for (int j = 0; j < m.getRows(); j++) {
-				m.put(j, 0, 0);
+		for (int t = 0; t < Thetas.length; t++) {
+			// Ignore bias weights
+			DoubleMatrix Delta = MatrixTools.copy(Thetas[t]);
+			
+			for (int i = 0; i < Delta.getRows(); i++) {
+				Delta.put(i, 0, 0);
 			}
+			
+			Deltas[t] = Delta;
 		}
 
-		return nn.new WeightDeltas(Delta1, Delta2);
+		return Deltas;
 	}
 
 	/**
@@ -120,8 +111,8 @@ public class NeuralNetworkCostFunction implements CostFunction {
 	 * @param lambda
 	 *            Regularization parameter
 	 */
-	public double getCost(DoubleMatrix x, DoubleMatrix outputLayer,
-			DoubleMatrix y, double lambda) {
+	public double getCost(DoubleMatrix x, DoubleMatrix[] Thetas,
+			DoubleMatrix outputLayer, DoubleMatrix y, double lambda) {
 		/**
 		 * Cost function: fitting
 		 */
@@ -148,13 +139,14 @@ public class NeuralNetworkCostFunction implements CostFunction {
 		 * the weights for the bias unit.
 		 */
 
-		DoubleMatrix theta1Shaved = Theta1.getRange(0, Theta1.getRows(), 1,
-				Theta1.getColumns());
-		DoubleMatrix theta2Shaved = Theta2.getRange(0, Theta2.getRows(), 1,
-				Theta2.getColumns());
-		double regularizationCost = MatrixTools.matrixSum(theta1Shaved
-				.mul(theta1Shaved))
-				+ MatrixTools.matrixSum(theta2Shaved.mul(theta2Shaved));
+		double regularizationCost = 0;
+		for (int i = 0; i < Thetas.length; i++) {
+			// Ignore the first column of the weight matrix, which corresponds
+			// to the weights for the bias unit.
+			DoubleMatrix ThetaShaved = Thetas[i].getRange(0, Thetas[i].getRows(), 1, Thetas[i].getColumns());
+			
+			regularizationCost += MatrixTools.matrixSum(ThetaShaved.mul(ThetaShaved));
+		}
 
 		double totalCost = (fittingCost + lambda / 2 * regularizationCost) / m;
 		return totalCost;

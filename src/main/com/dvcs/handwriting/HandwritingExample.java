@@ -197,7 +197,7 @@ public class HandwritingExample {
 			e.printStackTrace();
 		}
 
-		network = new NeuralNetwork(Theta1, Theta2);
+		network = new NeuralNetwork(new DoubleMatrix[] { Theta1, Theta2 });
 	}
 
 	private void cycleExamples() {
@@ -216,7 +216,7 @@ public class HandwritingExample {
 
 		// Get the output layer (just a column vector)
 		ForwardPropagationResult fResult = network.feedForward(x);
-		double[] units = fResult.getA3().getColumn(0).toArray();
+		double[] units = fResult.getOutputLayer().getColumn(0).toArray();
 		int predictedClass = NeuralNetwork.maxIndex(units);
 		long end = System.nanoTime();
 

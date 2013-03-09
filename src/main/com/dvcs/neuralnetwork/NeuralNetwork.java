@@ -16,27 +16,54 @@ public class NeuralNetwork {
 	final double RANDOM_WEIGHT_MATRIX_MINIMUM = 0;
 	final double RANDOM_WEIGHT_MATRIX_MAXIMUM = 0.12;
 
-	DoubleMatrix Theta1;
-	DoubleMatrix Theta2;
+	DoubleMatrix[] Thetas;
 
-	public NeuralNetwork(int numLayer1Units, int numLayer2Units,
-			int numLayer3Units) {
-		Theta1 = DoubleMatrix
-				.rand(numLayer2Units, numLayer1Units + 1)
-				.mul(RANDOM_WEIGHT_MATRIX_MAXIMUM
-						- RANDOM_WEIGHT_MATRIX_MINIMUM)
-				.add(RANDOM_WEIGHT_MATRIX_MINIMUM);
+	/**
+	 * For an element $i$, the number of rows in the matrix $\Theta^{(i)}$.
+	 */
+	int[] rowDimensions;
 
-		Theta2 = DoubleMatrix
-				.rand(numLayer3Units, numLayer2Units + 1)
-				.mul(RANDOM_WEIGHT_MATRIX_MAXIMUM
-						- RANDOM_WEIGHT_MATRIX_MINIMUM)
-				.add(RANDOM_WEIGHT_MATRIX_MINIMUM);
+	/**
+	 * For an element $i$, the number of columns in the matrix $\Theta^{(i)}$.
+	 */
+	int[] columnDimensions;
+
+	/**
+	 * @param layerSizes
+	 *            An array representing the sequence of layers in the network.
+	 *            The value of each element represents the number of units in
+	 *            the corresponding layer.
+	 */
+	public NeuralNetwork(int[] layerSizes) {
+		Thetas = new DoubleMatrix[layerSizes.length - 1];
+		rowDimensions = new int[layerSizes.length - 1];
+		columnDimensions = new int[layerSizes.length - 1];
+
+		for (int i = 0; i < layerSizes.length - 1; i++) {
+			int rows = layerSizes[i + 1];
+			int columns = layerSizes[i] + 1;
+
+			Thetas[i] = DoubleMatrix
+					.rand(rows, columns)
+					.mul(RANDOM_WEIGHT_MATRIX_MAXIMUM
+							- RANDOM_WEIGHT_MATRIX_MINIMUM)
+					.add(RANDOM_WEIGHT_MATRIX_MINIMUM);
+
+			rowDimensions[i] = rows;
+			columnDimensions[i] = columns;
+		}
 	}
 
-	public NeuralNetwork(DoubleMatrix t1, DoubleMatrix t2) {
-		Theta1 = t1;
-		Theta2 = t2;
+	public NeuralNetwork(DoubleMatrix[] Thetas) {
+		this.Thetas = Thetas;
+
+		rowDimensions = new int[Thetas.length];
+		columnDimensions = new int[Thetas.length];
+
+		for (int i = 0; i < Thetas.length; i++) {
+			rowDimensions[i] = Thetas[i].getRows();
+			columnDimensions[i] = Thetas[i].getColumns();
+		}
 	}
 
 	/**
@@ -91,7 +118,8 @@ public class NeuralNetwork {
 		}
 
 		ForwardPropagationResult fResult = feedForward(x);
-		DoubleMatrix outputLayer = fResult.getA3();
+		DoubleMatrix outputLayer = fResult.getOutputLayer();
+
 		if (outputLayer.getRows() != y.getRows()
 				|| outputLayer.getColumns() != y.getColumns()) {
 			throw new RuntimeException(
@@ -103,9 +131,7 @@ public class NeuralNetwork {
 			ourListener = new MinimizerListener() {
 				public void minimizationIterationFinished(int n, double cost,
 						DoubleVector parameters) {
-					DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
-					Theta1 = weights[0];
-					Theta2 = weights[1];
+					Thetas = convertPointToWeightMatrices(parameters);
 
 					if (listener != null) {
 						listener.minimizationIterationFinished(n, cost,
@@ -119,121 +145,150 @@ public class NeuralNetwork {
 
 		// Unroll Theta1 and Theta2, then concatenate. This forms our initial
 		// parameter vector.
-		DoubleVector initParams = convertWeightMatricesToPoint(new DoubleMatrix[] {
-				Theta1, Theta2 });
+		DoubleVector initParams = convertWeightMatricesToPoint(Thetas);
 
 		NeuralNetworkCostFunction cost = new NeuralNetworkCostFunction(this, x,
 				y, lambda);
 		DoubleVector parameters = Fmincg.minimizeFunction(cost, initParams,
 				100, ourListener);
 
-		DoubleMatrix[] weights = convertPointToWeightMatrices(parameters);
-		Theta1 = weights[0];
-		Theta2 = weights[1];
+		Thetas = convertPointToWeightMatrices(parameters);
 	}
 
-	public class WeightDeltas {
-		private DoubleMatrix Delta1;
-		private DoubleMatrix Delta2;
-
-		public WeightDeltas(DoubleMatrix delta1, DoubleMatrix delta2) {
-			Delta1 = delta1;
-			Delta2 = delta2;
-		}
-
-		public DoubleMatrix getDelta1() {
-			return Delta1;
-		}
-
-		public DoubleMatrix getDelta2() {
-			return Delta2;
-		}
-	}
-
-	public WeightDeltas backpropagate(ForwardPropagationResult fResult,
+	public DoubleMatrix[] backpropagate(ForwardPropagationResult fResult,
 			DoubleMatrix y) {
-		return backpropagate(fResult, y, Theta1, Theta2);
+		return backpropagate(fResult, y, Thetas);
 	}
 
 	/**
 	 * Determine what changes should be made to the weight matrices to lower
 	 * cost on the given data set.
 	 */
-	public WeightDeltas backpropagate(ForwardPropagationResult fResult,
-			DoubleMatrix y, DoubleMatrix Theta1, DoubleMatrix Theta2) {
+	public DoubleMatrix[] backpropagate(ForwardPropagationResult fResult,
+			DoubleMatrix y, DoubleMatrix[] Thetas) {
 		int m = y.getColumns();
 
-		DoubleMatrix Delta1 = new DoubleMatrix(Theta1.getRows(),
-				Theta1.getColumns());
-		DoubleMatrix Delta2 = new DoubleMatrix(Theta2.getRows(),
-				Theta2.getColumns());
+		// If we have $l$ layers in the network, this array should have $l -
+		// 1$ elements. The first element corresponds to `Delta1`, the total
+		// change necessary in `Theta1`.
+		DoubleMatrix[] Deltas = new DoubleMatrix[Thetas.length];
 
-		DoubleMatrix A1 = fResult.getA1();
-		DoubleMatrix A2 = fResult.getA2();
-		DoubleMatrix A3 = fResult.getA3();
-		DoubleMatrix Z2 = fResult.getZ2();
+		DoubleMatrix[] preLayerValues = fResult.getPreLayerValues();
+		DoubleMatrix[] layerValues = fResult.getLayerValues();
 
 		for (int i = 0; i < m; i++) {
+			DoubleMatrix[] deltaVectors = new DoubleMatrix[Thetas.length];
+
 			// The first "error" values are actual residuals.
-			DoubleMatrix delta3 = A3.getColumn(i).sub(y.getColumn(i));
+			deltaVectors[deltaVectors.length - 1] = fResult.getOutputLayer()
+					.getColumn(i).sub(y.getColumn(i));
 
-			// Propagate back to the hidden layer, using error values and
-			// parameters (Theta) to build a weighted sum.
-			DoubleMatrix delta2 = Theta2.transpose().mmul(delta3);
-			// Remove the error corresponding to the bias unit and finish.
-			delta2 = delta2.getRange(1, delta2.getRows(), 0,
-					delta2.getColumns()).mul(
-					MatrixTools.matrixSigmoidGradient(Z2.getColumn(i)));
+			// Propagate through the hidden layers, using error values and
+			// parameters (Theta) to build a weighted sum. We begin with $l$
+			// equivalent to the index of the last hidden layer in the network,
+			// and $l$ moves backward to the first hidden layer $l = 1$.
+			for (int l = layerValues.length - 2; l > 0; l--) {
+				DoubleMatrix deltaL = Thetas[l].transpose().mmul(
+						deltaVectors[l]);
 
-			DoubleMatrix Delta1Delta = delta2.mmul(A1.getColumn(i).transpose());
-			DoubleMatrix Delta2Delta = delta3.mmul(A2.getColumn(i).transpose());
+				// Remove the error corresponding to the bias unit.
+				deltaL = deltaL.getRange(1, deltaL.getRows(), 0,
+						deltaL.getColumns());
 
-			Delta1 = Delta1.add(Delta1Delta);
-			Delta2 = Delta2.add(Delta2Delta);
+				deltaL = deltaL.mul(MatrixTools
+						.matrixSigmoidGradient(preLayerValues[l - 1]
+								.getColumn(i)));
+
+				deltaVectors[l - 1] = deltaL;
+			}
+
+			// We've collected all of our delta vectors; now build the final
+			// weight shifting matrices.
+			for (int l = 0; l < Thetas.length; l++) {
+				DoubleMatrix Delta = deltaVectors[l].mmul(layerValues[l]
+						.getColumn(i).transpose());
+				
+				if ( Deltas[l] == null ) {
+					Deltas[l] = Delta;
+				} else {
+					Deltas[l] = Deltas[l].add(Delta);
+				}
+			}
 		}
 
-		return new WeightDeltas(Delta1, Delta2);
+		return Deltas;
 	}
 
 	public class ForwardPropagationResult {
-		private DoubleMatrix a1;
-		private DoubleMatrix z2;
-		private DoubleMatrix a2;
-		private DoubleMatrix z3;
-		private DoubleMatrix a3;
+		/**
+		 * The preliminary value of each layer before a bias layer has been
+		 * added and before the activation function has been applied. The first
+		 * element of this matrix corresponds to the *second* layer's pre-layer
+		 * values.
+		 */
+		private DoubleMatrix[] preLayerValues;
 
-		public ForwardPropagationResult(DoubleMatrix a1, DoubleMatrix z2,
-				DoubleMatrix a2, DoubleMatrix z3, DoubleMatrix a3) {
-			this.a1 = a1;
-			this.z2 = z2;
-			this.a2 = a2;
-			this.z3 = z3;
-			this.a3 = a3;
+		/**
+		 * The values of each unit for each example in each layer.
+		 */
+		private DoubleMatrix[] layerValues;
+
+		public ForwardPropagationResult(DoubleMatrix[] preLayerValues,
+				DoubleMatrix[] layerValues) {
+			this.preLayerValues = preLayerValues;
+			this.layerValues = layerValues;
 		}
 
-		public DoubleMatrix getA1() {
-			return a1;
+		public DoubleMatrix[] getPreLayerValues() {
+			return preLayerValues;
 		}
 
-		public DoubleMatrix getZ2() {
-			return z2;
+		public DoubleMatrix[] getLayerValues() {
+			return layerValues;
 		}
 
-		public DoubleMatrix getA2() {
-			return a2;
+		public DoubleMatrix getOutputLayer() {
+			DoubleMatrix[] layers = getLayerValues();
+			return layers[layers.length - 1];
 		}
 
-		public DoubleMatrix getZ3() {
-			return z3;
+		/**
+		 * @param layer
+		 *            Zero-based layer index
+		 * @return Matrix of unit values for this layer
+		 */
+		public DoubleMatrix getSingleLayerValues(int layer) {
+			return getLayerValues()[layer];
 		}
 
-		public DoubleMatrix getA3() {
-			return a3;
+		/**
+		 * @param layer
+		 *            Zero-based layer index
+		 * @return Matrix of pre-activation + pre-bias values for this layer
+		 */
+		public DoubleMatrix getSinglePreLayerValues(int layer) {
+			if (layer == 0) {
+				throw new RuntimeException(
+						"Pre-layer values do not exist for the input layer.");
+			}
+
+			return getPreLayerValues()[layer - 1];
+		}
+
+		public DoubleMatrix[] getHiddenLayerValues() {
+			DoubleMatrix[] layerValues = getLayerValues();
+			DoubleMatrix[] ret = new DoubleMatrix[layerValues.length - 2];
+
+			for (int l = 1; l < layerValues.length - 1; l++) {
+				ret[l - 1] = layerValues[l];
+			}
+
+			return ret;
 		}
 	}
 
 	public ForwardPropagationResult feedForward(DoubleMatrix x) {
-		return feedForward(x, Theta1, Theta2);
+		return feedForward(x, Thetas);
 	}
 
 	/**
@@ -252,16 +307,22 @@ public class NeuralNetwork {
 	 *         and each column represents an example
 	 */
 	public ForwardPropagationResult feedForward(DoubleMatrix x,
-			DoubleMatrix Theta1, DoubleMatrix Theta2) {
-		DoubleMatrix a1 = addBiasUnit(x.transpose());
+			DoubleMatrix[] Thetas) {
+		DoubleMatrix[] preLayerValues = new DoubleMatrix[Thetas.length];
+		DoubleMatrix[] layerValues = new DoubleMatrix[Thetas.length + 1];
 
-		DoubleMatrix z2 = Theta1.mmul(a1);
-		DoubleMatrix a2 = MatrixTools.matrixSigmoid(addBiasUnit(z2));
+		layerValues[0] = addBiasUnit(x.transpose());
 
-		DoubleMatrix z3 = Theta2.mmul(a2);
-		DoubleMatrix a3 = MatrixTools.matrixSigmoid(z3);
+		for (int l = 0; l < Thetas.length; l++) {
+			preLayerValues[l] = Thetas[l].mmul(layerValues[l]);
 
-		return new ForwardPropagationResult(a1, z2, a2, z3, a3);
+			DoubleMatrix withBias = l == Thetas.length - 1 ? preLayerValues[l]
+					: addBiasUnit(preLayerValues[l]);
+
+			layerValues[l + 1] = MatrixTools.matrixSigmoid(withBias);
+		}
+
+		return new ForwardPropagationResult(preLayerValues, layerValues);
 	}
 
 	/**
@@ -354,8 +415,8 @@ public class NeuralNetwork {
 	}
 
 	DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point) {
-		return convertPointToWeightMatrices(point, Theta1.getRows(),
-				Theta1.getColumns(), Theta2.getRows(), Theta2.getColumns());
+		return convertPointToWeightMatrices(point, rowDimensions,
+				columnDimensions);
 	}
 
 	/**
@@ -364,25 +425,29 @@ public class NeuralNetwork {
 	 * this into a flat list of parameters.
 	 * 
 	 * Reshape the flat parameter list required by the optimization method into
-	 * the two separate matrices that it represents (i.e., Theta1 and Theta2
-	 * unrolled and then concatenated).
+	 * the multiple separate matrices that it represents (i.e., Theta1, Theta2,
+	 * and so on unrolled and then concatenated).
 	 */
 	static DoubleMatrix[] convertPointToWeightMatrices(DoubleVector point,
-			int Theta1Rows, int Theta1Cols, int Theta2Rows, int Theta2Cols) {
+			int[] rowDimensions, int[] columnDimensions) {
+		assert rowDimensions.length == columnDimensions.length;
+
 		double[] params = point.toArray();
 
-		int Theta1Length = Theta1Rows * Theta1Cols;
-		double[] Theta1Unrolled = Arrays.copyOfRange(params, 0, Theta1Length);
-		DoubleMatrix Theta1 = MatrixTools.reshape(Theta1Unrolled, Theta1Rows,
-				Theta1Cols);
+		DoubleMatrix[] ret = new DoubleMatrix[rowDimensions.length];
+		int cursor = 0;
 
-		int Theta2Length = Theta2Rows * Theta2Cols;
-		double[] Theta2Unrolled = Arrays.copyOfRange(params, Theta1Length,
-				Theta1Length + Theta2Length);
-		DoubleMatrix Theta2 = MatrixTools.reshape(Theta2Unrolled, Theta2Rows,
-				Theta2Cols);
+		for (int l = 0; l < ret.length; l++) {
+			int ThetaLength = rowDimensions[l] * columnDimensions[l];
+			double[] ThetaUnrolled = Arrays.copyOfRange(params, cursor, cursor
+					+ ThetaLength);
+			ret[l] = MatrixTools.reshape(ThetaUnrolled, rowDimensions[l],
+					columnDimensions[l]);
 
-		return new DoubleMatrix[] { Theta1, Theta2 };
+			cursor += ThetaLength;
+		}
+
+		return ret;
 	}
 
 	/**

@@ -38,7 +38,8 @@ public class NeuralNetworkTestCase {
 				new double[] { 0.0, 0.0, 1.0, 0.0 },
 				new double[] { 0.0, 0.0, 0.0, 1.0 } });
 
-		NeuralNetwork network = new NeuralNetwork(Theta, Theta);
+		NeuralNetwork network = new NeuralNetwork(new DoubleMatrix[] { Theta,
+				Theta });
 		ForwardPropagationResult fResult = network.feedForward(x);
 
 		DoubleMatrix expectedA2 = MatrixTools.matrixSigmoid(NeuralNetwork
@@ -46,8 +47,8 @@ public class NeuralNetworkTestCase {
 		DoubleMatrix expectedA3 = MatrixTools.matrixSigmoid(expectedA2
 				.getRange(1, expectedA2.getRows(), 0, expectedA2.getColumns()));
 
-		Assert.assertEquals(expectedA2, fResult.getA2());
-		Assert.assertEquals(expectedA3, fResult.getA3());
+		Assert.assertEquals(expectedA2, fResult.getLayerValues()[1]);
+		Assert.assertEquals(expectedA3, fResult.getOutputLayer());
 	}
 
 	@Test
@@ -74,9 +75,11 @@ public class NeuralNetworkTestCase {
 				new double[] { 4, 5 }, new double[] { 8, 9 },
 				new double[] { 0, 10 } });
 
+		int[] rowDimensions = { Theta1.getRows(), Theta2.getRows() };
+		int[] columnDimensions = { Theta1.getColumns(), Theta2.getColumns() };
 		DoubleMatrix[] out = NeuralNetwork.convertPointToWeightMatrices(in,
-				Theta1.getRows(), Theta1.getColumns(), Theta2.getRows(),
-				Theta2.getColumns());
+				rowDimensions, columnDimensions);
+		
 		Assert.assertArrayEquals(new DoubleMatrix[] { Theta1, Theta2 }, out);
 	}
 
