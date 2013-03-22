@@ -33,6 +33,9 @@ public class NeuralNetworkDriver {
 
 	static final double LAMBDA = 0.75;
 
+	static final String DATA_QUEUE_NAME = "robotData";
+	Thread dataListenerThread;
+
 	NeuralNetwork network;
 	DoubleMatrix X;
 	DoubleMatrix Y;
@@ -46,7 +49,13 @@ public class NeuralNetworkDriver {
 
 	JPanel trainingSidebar;
 	JLabel costLabel;
-			
+
+	DataQueueListener.NewDataCallback dataCallback = new DataQueueListener.NewDataCallback() {
+		public void receivedData(byte[] data) {
+			System.out.println(new String(data));
+		}
+	};
+
 	public void init() {
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -59,12 +68,30 @@ public class NeuralNetworkDriver {
 		applet.start();
 		frame.add(applet);
 
+		JPanel adminBar = initAdminBar();
 		sidebar = initSidebar();
 		trainingSidebar = initTrainingSidebar();
 
+		frame.add(adminBar);
 		frame.add(new JScrollPane(sidebar));
 		frame.add(trainingSidebar);
 		frame.setVisible(true);
+	}
+	
+	private JPanel initAdminBar() {
+		JPanel adminBar = new JPanel();
+		GridLayout layout = new GridLayout(0, 2);
+		adminBar.setLayout(layout);
+		
+		JButton startListeningButton = new JButton("Start data listener");
+		startListeningButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				startQueueListener();
+			}
+		});
+		adminBar.add(startListeningButton);
+		
+		return adminBar;
 	}
 
 	private JPanel initSidebar() {
@@ -180,6 +207,14 @@ public class NeuralNetworkDriver {
 		// Show
 		DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
 		applet.setImage(image);
+	}
+
+	private void startQueueListener() {
+		DataQueueListener listener = new DataQueueListener(DATA_QUEUE_NAME,
+				dataCallback);
+		
+		dataListenerThread = new Thread(listener);
+		dataListenerThread.start();
 	}
 
 	/**
