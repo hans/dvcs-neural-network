@@ -51,11 +51,7 @@ public class NeuralNetworkDriver {
 
 	JPanel trainingSidebar;
 	JLabel costLabel;
-
-	public NeuralNetworkDriver() {
-		buildNeuralNetwork();
-	}
-
+			
 	public void init() {
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -168,21 +164,6 @@ public class NeuralNetworkDriver {
 		}
 	}
 
-	private void buildNeuralNetwork() {
-		DoubleMatrix Theta1 = null, Theta2 = null;
-
-		try {
-			Theta1 = getMatrix("Theta1");
-			X = getMatrix("X");
-			Theta2 = getMatrix("Theta2");
-			Y = getMatrix("Y");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		network = new NeuralNetwork(new DoubleMatrix[] { Theta1, Theta2 });
-	}
-
 	private void nextExample() {
 		// Pick a random example
 		int i = (int) Math.round(Math.random() * X.getRows());
@@ -204,21 +185,6 @@ public class NeuralNetworkDriver {
 		// Show
 		DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
 		applet.setImage(image);
-	}
-
-	private DoubleMatrix getMatrix(String matrixName) throws IOException,
-			RuntimeException {
-		String resourcePath = "com/dvcs/handwriting/resources";
-
-		InputStream stream = getClass().getClassLoader().getResourceAsStream(
-				resourcePath + "/" + matrixName + ".txt");
-
-		if (stream == null) {
-			throw new IOException("Matrix not found");
-		}
-
-		InputStreamReader reader = new InputStreamReader(stream);
-		return MatlabMatrixFactory.loadFromReader(reader);
 	}
 
 	/**
