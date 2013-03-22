@@ -5,9 +5,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -18,13 +15,11 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 
 import org.jblas.DoubleMatrix;
 
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
-import com.dvcs.tools.MatlabMatrixFactory;
 import com.dvcs.tools.MatrixTools;
 
 import de.jungblut.math.DoubleVector;
@@ -98,7 +93,7 @@ public class NeuralNetworkDriver {
 		sidebar.add(new JLabel(""));
 
 		classBars = new JProgressBar[NUM_CLASSES];
-		for (int i = 0; i < NUM_CLASSES; i++) {
+		for ( int i = 0; i < NUM_CLASSES; i++ ) {
 			classBars[i] = new JProgressBar(0, 1000);
 
 			sidebar.add(new JLabel(classLabels[i]));
@@ -159,7 +154,7 @@ public class NeuralNetworkDriver {
 		predictionLabel.setText(classLabels[predictedClass] + " ("
 				+ microseconds + " micros)");
 
-		for (int i = 0; i < outputUnits.length; i++) {
+		for ( int i = 0; i < outputUnits.length; i++ ) {
 			classBars[i].setValue((int) (outputUnits[i] * 1000));
 		}
 	}
@@ -197,23 +192,23 @@ public class NeuralNetworkDriver {
 		double max = Double.MIN_VALUE;
 		double min = Double.MAX_VALUE;
 
-		for (int i = 0; i < m.getRows(); i++) {
-			for (int j = 0; j < m.getColumns(); j++) {
+		for ( int i = 0; i < m.getRows(); i++ ) {
+			for ( int j = 0; j < m.getColumns(); j++ ) {
 				double value = m.get(i, j);
 
-				if (value > max) {
+				if ( value > max ) {
 					max = value;
-				} else if (value < min) {
+				} else if ( value < min ) {
 					min = value;
 				}
 			}
 		}
 
-		for (int i = 0; i < m.getRows(); i++) {
-			for (int j = 0; j < m.getColumns(); j++) {
+		for ( int i = 0; i < m.getRows(); i++ ) {
+			for ( int j = 0; j < m.getColumns(); j++ ) {
 				double value = m.get(i, j);
 				value = (value - min) / (max - min);
-				if (value < 0) {
+				if ( value < 0 ) {
 					System.out.println("--- fail");
 				}
 
