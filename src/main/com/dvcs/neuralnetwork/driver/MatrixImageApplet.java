@@ -1,4 +1,4 @@
-package com.dvcs.handwriting;
+package com.dvcs.neuralnetwork.driver;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -7,7 +7,7 @@ import javax.swing.JApplet;
 
 import org.jblas.DoubleMatrix;
 
-public class HandwritingExampleApplet extends JApplet {
+public class MatrixImageApplet extends JApplet {
 
 	DoubleMatrix image;
 

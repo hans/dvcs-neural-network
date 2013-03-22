@@ -1,4 +1,4 @@
-package com.dvcs.handwriting;
+package com.dvcs.neuralnetwork.driver;
 
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -30,7 +30,7 @@ import com.dvcs.tools.MatrixTools;
 import de.jungblut.math.DoubleVector;
 import de.jungblut.math.minimize.MinimizerListener;
 
-public class HandwritingExample {
+public class NeuralNetworkDriver {
 
 	static final int NUM_CLASSES = 10;
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
@@ -43,7 +43,7 @@ public class HandwritingExample {
 	DoubleMatrix Y;
 
 	JFrame frame;
-	HandwritingExampleApplet applet;
+	MatrixImageApplet applet;
 
 	JPanel sidebar;
 	JProgressBar[] classBars;
@@ -52,14 +52,7 @@ public class HandwritingExample {
 	JPanel trainingSidebar;
 	JLabel costLabel;
 
-	ActionListener timerAction = new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			nextExample();
-		}
-	};
-	Timer timer;
-
-	public HandwritingExample() {
+	public NeuralNetworkDriver() {
 		buildNeuralNetwork();
 	}
 
@@ -70,7 +63,7 @@ public class HandwritingExample {
 		frame.getContentPane().setLayout(
 				new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
 
-		applet = new HandwritingExampleApplet();
+		applet = new MatrixImageApplet();
 		applet.init();
 		applet.start();
 		frame.add(applet);
@@ -81,11 +74,6 @@ public class HandwritingExample {
 		frame.add(new JScrollPane(sidebar));
 		frame.add(trainingSidebar);
 		frame.setVisible(true);
-
-		timer = new Timer(500, timerAction);
-
-		// Show an example
-		nextExample();
 	}
 
 	private JPanel initSidebar() {
@@ -101,22 +89,6 @@ public class HandwritingExample {
 			}
 		});
 		sidebar.add(nextButton);
-
-		JButton cycleButton = new JButton("Cycle examples");
-		cycleButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				cycleExamples();
-			}
-		});
-		sidebar.add(cycleButton);
-
-		JButton showHiddenLayersButton = new JButton("Show hidden layers");
-		showHiddenLayersButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				showHiddenLayer();
-			}
-		});
-		sidebar.add(showHiddenLayersButton);
 
 		JButton placeholderButton = new JButton("");
 		sidebar.add(placeholderButton);
@@ -211,10 +183,6 @@ public class HandwritingExample {
 		network = new NeuralNetwork(new DoubleMatrix[] { Theta1, Theta2 });
 	}
 
-	private void cycleExamples() {
-		timer.start();
-	}
-
 	private void nextExample() {
 		// Pick a random example
 		int i = (int) Math.round(Math.random() * X.getRows());
@@ -235,18 +203,6 @@ public class HandwritingExample {
 
 		// Show
 		DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
-		applet.setImage(image);
-	}
-
-	private void showHiddenLayer() {
-		DoubleMatrix firstHiddenLayer = network.getThetas()[0];
-
-		// Remove column corresponding to bias unit
-		firstHiddenLayer = firstHiddenLayer.getRange(0,
-				firstHiddenLayer.getRows(), 1, firstHiddenLayer.getColumns());
-
-		DoubleMatrix image = normalize(MatrixTools.reshape(firstHiddenLayer
-				.getRow(0).toArray()));
 		applet.setImage(image);
 	}
 
@@ -319,7 +275,7 @@ public class HandwritingExample {
 	}
 
 	public static void main(String[] args) {
-		new HandwritingExample().init();
+		new NeuralNetworkDriver().init();
 	}
 
 }
