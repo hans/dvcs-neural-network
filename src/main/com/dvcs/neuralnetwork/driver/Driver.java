@@ -11,6 +11,7 @@ import org.jblas.DoubleMatrix;
 import org.jblas.util.Random;
 
 import com.dvcs.neuralnetwork.NeuralNetwork;
+import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.Example;
@@ -29,33 +30,17 @@ public class Driver {
 	private DriverGUI gui;
 	private NeuralNetwork network;
 	private DataCollector collector;
+	private DataCollector predictor;
 	private NeuralNetworkBuilder builder;
 
-	private NewDataCallback dataCallback = new NewDataCallback() {
+	private NewDataCallback dataCollectorCallback = new NewDataCallback() {
 		public void receivedData(byte[] data) {
-			BufferedImage im = null;
-			try {
-				im = ImageIO.read(new ByteArrayInputStream(data));
-			} catch ( IOException e ) {
-				e.printStackTrace();
-				return;
-			}
-
-			if ( im == null ) {
-				LOGGER.severe("Failed to parse data received from queue. "
-						+ "Only valid raw image data should be published on "
-						+ "this queue.");
-				return;
-			}
-
-			DoubleMatrix m = ImageConverter.convertImageToMatrix(im, true);
-			m = ImageConverter.normalize(m);
+			DoubleMatrix m = parseImageData(data);
 
 			double[] x = m.toArray();
 
 			// TODO: y
-			Random r = new Random();
-			double[] y = new double[] { r.nextDouble(), r.nextDouble() };
+			double[] y = new double[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 			Example ex = builder.new Example(x, y);
 			try {
@@ -69,10 +54,39 @@ public class Driver {
 		}
 	};
 
+	private NewDataCallback dataPredictorCallback = new NewDataCallback() {
+		public void receivedData(byte[] data) {
+			if ( network == null ) {
+				LOGGER.severe("Driver asked to make predictions before network"
+						+ "was built");
+			}
+
+			DoubleMatrix m = parseImageData(data);
+
+			// Build a row vector
+			int length = m.getRows() * m.getColumns();
+			DoubleMatrix x = new DoubleMatrix(1, length, m.toArray());
+
+			long start = System.nanoTime();
+
+			ForwardPropagationResult fResult = network.feedForward(x);
+			double[] outputUnits = fResult.getOutputLayer().getColumn(0)
+					.toArray();
+			int predictedClass = NeuralNetwork.maxIndex(outputUnits);
+
+			long end = System.nanoTime();
+
+			gui.loadImageMatrix(m);
+			gui.displayPropagationResult(outputUnits, predictedClass, start
+					- end);
+		}
+	};
+
 	public Driver(DriverGUI _gui) {
 		gui = _gui;
 		builder = new NeuralNetworkBuilder();
-		collector = new DataCollector(QUEUE_NAME, dataCallback);
+		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
+		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
 	}
 
 	public boolean isCollecting() {
@@ -111,7 +125,37 @@ public class Driver {
 	}
 
 	public void startFeedForward() {
+		LOGGER.info("Beginning feedforward processing");
 
+		predictor.startQueueListener();
+	}
+	
+	public void stopFeedForward() {
+		LOGGER.info("Ending feedforward processing");
+		
+		predictor.stopQueueListener();
+	}
+
+	private DoubleMatrix parseImageData(byte[] data) {
+		BufferedImage im = null;
+		try {
+			im = ImageIO.read(new ByteArrayInputStream(data));
+		} catch ( IOException e ) {
+			e.printStackTrace();
+			return null;
+		}
+
+		if ( im == null ) {
+			LOGGER.severe("Failed to parse data received from queue. "
+					+ "Only valid raw image data should be published on "
+					+ "this queue.");
+			return null;
+		}
+
+		DoubleMatrix m = ImageConverter.convertImageToMatrix(im, true);
+		m = ImageConverter.normalize(m);
+
+		return m;
 	}
 
 	public class OutputProvider {

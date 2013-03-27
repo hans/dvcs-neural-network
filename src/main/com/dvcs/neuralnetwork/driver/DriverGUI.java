@@ -118,6 +118,7 @@ public class DriverGUI {
 		
 		adminBar.add(listeningToggleButton);
 		adminBar.add(buildNetworkButton);
+		adminBar.add(feedForwardButton);
 
 		return adminBar;
 	}
@@ -240,6 +241,10 @@ public class DriverGUI {
 	// DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
 	// applet.setImage(image);
 	// }
+	
+	void displayPropagationResult(double[] outputUnits, int predictedClass, long time) {
+		updateSidebar(outputUnits, predictedClass, time);
+	}
 
 	void loadImageMatrix(DoubleMatrix m) {
 		// TODO: Forward prop

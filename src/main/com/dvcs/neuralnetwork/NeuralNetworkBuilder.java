@@ -67,7 +67,7 @@ public class NeuralNetworkBuilder {
 	 */
 	public NeuralNetwork buildNetwork(int[] hiddenLayerSizes, double lambda)
 			throws InsufficientDataException {
-		if ( hasSufficientData() )
+		if ( !hasSufficientData() )
 			throw new InsufficientDataException();
 
 		int[] layerSizes = new int[hiddenLayerSizes.length + 2];
