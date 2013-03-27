@@ -4,6 +4,9 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -11,7 +14,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -27,7 +29,7 @@ public class NeuralNetworkDriverGUI {
 			"6", "7", "8", "9", "0" };
 
 	NeuralNetworkDriver driver;
-	
+
 	JFrame frame;
 	MatrixImageApplet applet;
 
@@ -39,31 +41,35 @@ public class NeuralNetworkDriverGUI {
 	JLabel costLabel;
 
 	public void init() {
-		driver = new NeuralNetworkDriver();
-		
+		// Debug all
+		LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME)
+				.setLevel(Level.FINEST);
+
+		driver = new NeuralNetworkDriver(this);
+
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1010, 400);
 		frame.getContentPane().setLayout(
 				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
-		
+
 		JPanel statusPanel = initStatusPanel();
 		frame.add(statusPanel);
-		
+
 		JPanel adminBar = initAdminBar();
 		frame.add(adminBar);
-		
+
 		JPanel mainPanel = initMainPanel();
 		frame.add(mainPanel);
-				
+
 		frame.setVisible(true);
 	}
-	
+
 	private JPanel initStatusPanel() {
 		JPanel p = new JPanel();
-		
+
 		// TODO
-		
+
 		return p;
 	}
 
@@ -86,21 +92,21 @@ public class NeuralNetworkDriverGUI {
 	private JPanel initMainPanel() {
 		JPanel p = new JPanel();
 		p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-		
+
 		applet = new MatrixImageApplet();
 		applet.init();
 		applet.start();
 		p.add(applet);
-		
+
 		JPanel sidebar = initSidebar();
 		p.add(sidebar);
-		
+
 		return p;
 	}
-	
+
 	private JPanel initSidebar() {
 		JPanel sidebar = new JPanel();
-		
+
 		GridLayout layout = new GridLayout(0, 2);
 		sidebar.setLayout(layout);
 

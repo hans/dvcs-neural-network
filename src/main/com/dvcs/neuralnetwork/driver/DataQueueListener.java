@@ -1,6 +1,7 @@
 package com.dvcs.neuralnetwork.driver;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -10,6 +11,8 @@ import com.rabbitmq.client.QueueingConsumer;
 public class DataQueueListener implements Runnable {
 
 	private static final String DEFAULT_HOST_NAME = "localhost";
+	
+	private static final Logger LOGGER = Logger.getLogger("DataQueueListener");
 
 	private String host;
 	private String queueName;
@@ -41,6 +44,8 @@ public class DataQueueListener implements Runnable {
 			
 			QueueingConsumer consumer = new QueueingConsumer(channel);
 			channel.basicConsume(queueName, true, consumer);
+			
+			LOGGER.info("Queue listener up");
 			
 			while ( true ) {
 				QueueingConsumer.Delivery delivery = consumer.nextDelivery();

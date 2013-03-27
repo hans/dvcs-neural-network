@@ -3,6 +3,7 @@ package com.dvcs.neuralnetwork.driver;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
@@ -19,7 +20,11 @@ public class NeuralNetworkDriver {
 	static final double LAMBDA = 0.75;
 	static final int HIDDEN_LAYER_UNITS = 100;
 	static final int OUTPUT_LAYER_UNITS = 10;
-	
+
+	private static final Logger LOGGER = Logger
+			.getLogger("NeuralNetworkDriver");
+
+	private NeuralNetworkDriverGUI gui;
 	private NeuralNetwork network;
 	private NeuralNetworkExampleCollector collector;
 	private NeuralNetworkBuilder builder;
@@ -34,8 +39,14 @@ public class NeuralNetworkDriver {
 				return;
 			}
 
-			DoubleMatrix m = ImageConverter.convertImageToMatrix(im,
-					true);
+			if ( im == null ) {
+				LOGGER.severe("Failed to parse data received from queue. "
+						+ "Only valid raw image data should be published on "
+						+ "this queue.");
+				return;
+			}
+
+			DoubleMatrix m = ImageConverter.convertImageToMatrix(im, true);
 			m = ImageConverter.normalize(m);
 			
 			double[] x = m.toArray();
@@ -59,6 +70,8 @@ public class NeuralNetworkDriver {
 	}
 
 	public void startCollecting() {
+		LOGGER.info("Beginning data collection");
+
 		collector.startQueueListener();
 	}
 	
