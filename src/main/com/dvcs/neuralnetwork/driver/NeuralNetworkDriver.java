@@ -61,7 +61,7 @@ public class NeuralNetworkDriver {
 			} catch ( DimensionMismatchException e ) {
 				e.printStackTrace();
 			}
-			
+
 			// Display image
 			gui.loadImageMatrix(m);
 		}
@@ -72,7 +72,7 @@ public class NeuralNetworkDriver {
 		builder = new NeuralNetworkBuilder();
 		collector = new NeuralNetworkExampleCollector(dataCallback);
 	}
-	
+
 	public boolean isCollecting() {
 		return collector.isListening();
 	}
@@ -82,11 +82,18 @@ public class NeuralNetworkDriver {
 
 		collector.startQueueListener();
 	}
-	
+
 	public void stopCollecting() {
 		LOGGER.info("Ending data collection");
-		
+
 		collector.stopQueueListener();
+	}
+
+	/**
+	 * @return Whether the builder has enough data to create a neural network
+	 */
+	public boolean hasSufficientData() {
+		return builder.hasSufficientData();
 	}
 
 	/**

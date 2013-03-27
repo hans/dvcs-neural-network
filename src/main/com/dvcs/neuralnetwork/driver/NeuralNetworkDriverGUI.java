@@ -78,18 +78,36 @@ public class NeuralNetworkDriverGUI {
 		adminBar.setLayout(new BoxLayout(adminBar, BoxLayout.X_AXIS));
 
 		final JButton listeningToggleButton = new JButton("Start collecting");
+		
+		final JButton buildNetworkButton = new JButton("Build neural network");
+		buildNetworkButton.setEnabled(false);
+		
 		listeningToggleButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if ( driver.isCollecting() ) {
 					driver.stopCollecting();
 					listeningToggleButton.setText("Start collecting");
+					
+					if ( driver.hasSufficientData() ) {
+						buildNetworkButton.setEnabled(true);
+					} else {
+						buildNetworkButton.setEnabled(false);
+					}
 				} else {
 					driver.startCollecting();
 					listeningToggleButton.setText("Stop collecting");
 				}
 			}
 		});
+		
+		buildNetworkButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				driver.trainNeuralNetwork();
+			}
+		});
+		
 		adminBar.add(listeningToggleButton);
+		adminBar.add(buildNetworkButton);
 
 		return adminBar;
 	}

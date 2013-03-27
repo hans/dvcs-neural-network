@@ -62,11 +62,12 @@ public class NeuralNetworkBuilder {
 	 *            natural order (i.e., the first element in the array represents
 	 *            the size of the hidden layer immediately connected to the
 	 *            input layer).
-	 * @param lambda Regularization parameter
+	 * @param lambda
+	 *            Regularization parameter
 	 */
 	public NeuralNetwork buildNetwork(int[] hiddenLayerSizes, double lambda)
 			throws InsufficientDataException {
-		if ( examples.size() == 0 )
+		if ( hasSufficientData() )
 			throw new InsufficientDataException();
 
 		int[] layerSizes = new int[hiddenLayerSizes.length + 2];
@@ -79,15 +80,22 @@ public class NeuralNetworkBuilder {
 
 		DoubleMatrix x = new DoubleMatrix(examples.size(), inputLayerSize);
 		DoubleMatrix y = new DoubleMatrix(outputLayerSize, examples.size());
-		
+
 		for ( int i = 0; i < examples.size(); i++ ) {
 			Example ex = examples.get(i);
 			x.putRow(i, new DoubleMatrix(ex.getX()));
 			y.putColumn(i, new DoubleMatrix(ex.getY()));
 		}
-		
+
 		ret.train(x, y, lambda, null, false);
 		return ret;
+	}
+
+	/**
+	 * @return Whether the builder has enough data to create a neural network
+	 */
+	public boolean hasSufficientData() {
+		return examples.size() > 0;
 	}
 
 	public class InsufficientDataException extends Exception {
