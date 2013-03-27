@@ -4,11 +4,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -49,32 +45,37 @@ public class NeuralNetworkDriverGUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1010, 400);
 		frame.getContentPane().setLayout(
-				new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
-
-		applet = new MatrixImageApplet();
-		applet.init();
-		applet.start();
-		frame.add(applet);
-
+				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
+		
+		JPanel statusPanel = initStatusPanel();
+		frame.add(statusPanel);
+		
 		JPanel adminBar = initAdminBar();
-		sidebar = initSidebar();
-		trainingSidebar = initTrainingSidebar();
-
 		frame.add(adminBar);
-		frame.add(new JScrollPane(sidebar));
-		frame.add(trainingSidebar);
+		
+		JPanel mainPanel = initMainPanel();
+		frame.add(mainPanel);
+				
 		frame.setVisible(true);
+	}
+	
+	private JPanel initStatusPanel() {
+		JPanel p = new JPanel();
+		
+		// TODO
+		
+		return p;
 	}
 
 	private JPanel initAdminBar() {
 		JPanel adminBar = new JPanel();
-		GridLayout layout = new GridLayout(0, 2);
-		adminBar.setLayout(layout);
+		adminBar.setLayout(new BoxLayout(adminBar, BoxLayout.X_AXIS));
 
-		JButton startListeningButton = new JButton("Start data listener");
+		final JButton startListeningButton = new JButton("Start collecting");
 		startListeningButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				driver.startCollecting();
+				startListeningButton.setEnabled(false);
 			}
 		});
 		adminBar.add(startListeningButton);
@@ -82,22 +83,34 @@ public class NeuralNetworkDriverGUI {
 		return adminBar;
 	}
 
+	private JPanel initMainPanel() {
+		JPanel p = new JPanel();
+		p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+		
+		applet = new MatrixImageApplet();
+		applet.init();
+		applet.start();
+		p.add(applet);
+		
+		JPanel sidebar = initSidebar();
+		p.add(sidebar);
+		
+		return p;
+	}
+	
 	private JPanel initSidebar() {
 		JPanel sidebar = new JPanel();
-
+		
 		GridLayout layout = new GridLayout(0, 2);
 		sidebar.setLayout(layout);
 
-		JButton placeholderButton = new JButton("");
+		JLabel placeholderButton = new JLabel("");
 		sidebar.add(placeholderButton);
 
 		predictionLabel = new JLabel();
 		predictionLabel.setFont(new Font("Sans Serif", Font.PLAIN, 18));
 		predictionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		sidebar.add(predictionLabel);
-
-		// hack
-		sidebar.add(new JLabel(""));
 
 		classBars = new JProgressBar[NUM_CLASSES];
 		for ( int i = 0; i < NUM_CLASSES; i++ ) {
