@@ -27,7 +27,7 @@ public class NeuralNetworkDriver {
 
 	private NeuralNetworkDriverGUI gui;
 	private NeuralNetwork network;
-	private NeuralNetworkExampleCollector collector;
+	private NeuralNetworkDataCollector collector;
 	private NeuralNetworkBuilder builder;
 
 	private NewDataCallback dataCallback = new NewDataCallback() {
@@ -71,7 +71,7 @@ public class NeuralNetworkDriver {
 	public NeuralNetworkDriver(NeuralNetworkDriverGUI _gui) {
 		gui = _gui;
 		builder = new NeuralNetworkBuilder();
-		collector = new NeuralNetworkExampleCollector(QUEUE_NAME, dataCallback);
+		collector = new NeuralNetworkDataCollector(QUEUE_NAME, dataCallback);
 	}
 
 	public boolean isCollecting() {

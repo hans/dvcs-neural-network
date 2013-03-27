@@ -2,13 +2,13 @@ package com.dvcs.neuralnetwork.driver;
 
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
-public class NeuralNetworkExampleCollector {
+public class NeuralNetworkDataCollector {
 
 	private String queueName;
 	private DataQueueListener queueListener;
 	private NewDataCallback dataCallback;
 
-	public NeuralNetworkExampleCollector(String queueName,
+	public NeuralNetworkDataCollector(String queueName,
 			NewDataCallback dataCallback) {
 		this.queueName = queueName;
 		this.dataCallback = dataCallback;
