@@ -11,7 +11,7 @@ public class MatrixImageApplet extends JApplet {
 
 	DoubleMatrix image;
 
-	static final int SCALE = 20;
+	static final int SCALE = 2;
 
 	public void setImage(DoubleMatrix i) {
 		image = i.transpose();

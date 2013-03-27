@@ -23,7 +23,7 @@ public class ImageConverter {
 		DoubleMatrix ret = new DoubleMatrix(m, n);
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
-				ret.put(i, j, image.getRGB(i, j));
+				ret.put(j, i, image.getRGB(i, j));
 			}
 		}
 		

@@ -28,7 +28,7 @@ public class NeuralNetworkDriver {
 	private NeuralNetwork network;
 	private NeuralNetworkExampleCollector collector;
 	private NeuralNetworkBuilder builder;
-	
+
 	private NewDataCallback dataCallback = new NewDataCallback() {
 		public void receivedData(byte[] data) {
 			BufferedImage im = null;
@@ -48,23 +48,27 @@ public class NeuralNetworkDriver {
 
 			DoubleMatrix m = ImageConverter.convertImageToMatrix(im, true);
 			m = ImageConverter.normalize(m);
-			
+
 			double[] x = m.toArray();
-			
+
 			// TODO: y
 			Random r = new Random();
 			double[] y = new double[] { r.nextDouble(), r.nextDouble() };
-			
+
 			Example ex = builder.new Example(x, y);
 			try {
 				builder.addExample(ex);
 			} catch ( DimensionMismatchException e ) {
 				e.printStackTrace();
 			}
+			
+			// Display image
+			gui.loadImageMatrix(m);
 		}
 	};
-	
-	public NeuralNetworkDriver() {
+
+	public NeuralNetworkDriver(NeuralNetworkDriverGUI _gui) {
+		gui = _gui;
 		builder = new NeuralNetworkBuilder();
 		collector = new NeuralNetworkExampleCollector(dataCallback);
 	}
@@ -74,15 +78,15 @@ public class NeuralNetworkDriver {
 
 		collector.startQueueListener();
 	}
-	
+
 	/**
 	 * Train the neural network using the given sample data.
 	 */
 	public void trainNeuralNetwork() {
 		// Generate X and Y matrices from examples
 	}
-	
+
 	public class OutputProvider {
-		
+
 	}
 }

@@ -208,7 +208,7 @@ public class NeuralNetworkDriverGUI {
 	// applet.setImage(image);
 	// }
 
-	private void loadImageMatrix(DoubleMatrix m) {
+	void loadImageMatrix(DoubleMatrix m) {
 		// TODO: Forward prop
 
 		applet.setImage(m);
