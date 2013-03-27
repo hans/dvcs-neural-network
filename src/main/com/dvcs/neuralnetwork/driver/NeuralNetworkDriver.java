@@ -17,6 +17,7 @@ import com.dvcs.neuralnetwork.NeuralNetworkBuilder.Example;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
 public class NeuralNetworkDriver {
+	static final String QUEUE_NAME = "robotData";
 	static final double LAMBDA = 0.75;
 	static final int HIDDEN_LAYER_UNITS = 100;
 	static final int OUTPUT_LAYER_UNITS = 10;
@@ -70,7 +71,7 @@ public class NeuralNetworkDriver {
 	public NeuralNetworkDriver(NeuralNetworkDriverGUI _gui) {
 		gui = _gui;
 		builder = new NeuralNetworkBuilder();
-		collector = new NeuralNetworkExampleCollector(dataCallback);
+		collector = new NeuralNetworkExampleCollector(QUEUE_NAME, dataCallback);
 	}
 
 	public boolean isCollecting() {

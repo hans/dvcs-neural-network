@@ -4,12 +4,13 @@ import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
 public class NeuralNetworkExampleCollector {
 
-	static final String DATA_QUEUE_NAME = "robotData";
-
+	private String queueName;
 	private DataQueueListener queueListener;
 	private NewDataCallback dataCallback;
 
-	public NeuralNetworkExampleCollector(NewDataCallback dataCallback) {
+	public NeuralNetworkExampleCollector(String queueName,
+			NewDataCallback dataCallback) {
+		this.queueName = queueName;
 		this.dataCallback = dataCallback;
 	}
 
@@ -18,7 +19,7 @@ public class NeuralNetworkExampleCollector {
 	}
 
 	public void startQueueListener() {
-		queueListener = new DataQueueListener(DATA_QUEUE_NAME, dataCallback);
+		queueListener = new DataQueueListener(queueName, dataCallback);
 		queueListener.start();
 	}
 
