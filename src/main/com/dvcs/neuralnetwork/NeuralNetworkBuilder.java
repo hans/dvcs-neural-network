@@ -90,10 +90,10 @@ public class NeuralNetworkBuilder {
 		return ret;
 	}
 
-	private class InsufficientDataException extends Exception {
+	public class InsufficientDataException extends Exception {
 	}
 
-	private class DimensionMismatchException extends Exception {
+	public class DimensionMismatchException extends Exception {
 		DimensionMismatchException(String message) {
 			super(message);
 		}

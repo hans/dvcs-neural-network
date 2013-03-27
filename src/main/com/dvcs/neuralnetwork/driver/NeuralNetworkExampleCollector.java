@@ -1,7 +1,5 @@
 package com.dvcs.neuralnetwork.driver;
 
-import java.util.List;
-
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
 public class NeuralNetworkExampleCollector {

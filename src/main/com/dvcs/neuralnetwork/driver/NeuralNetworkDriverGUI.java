@@ -30,6 +30,8 @@ public class NeuralNetworkDriverGUI {
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
 			"6", "7", "8", "9", "0" };
 
+	NeuralNetworkDriver driver;
+	
 	JFrame frame;
 	MatrixImageApplet applet;
 
@@ -40,24 +42,9 @@ public class NeuralNetworkDriverGUI {
 	JPanel trainingSidebar;
 	JLabel costLabel;
 
-	NeuralNetworkDriver driver = new NeuralNetworkDriver(
-			new DataQueueListener.NewDataCallback() {
-				public void receivedData(byte[] data) {
-					BufferedImage im = null;
-					try {
-						im = ImageIO.read(new ByteArrayInputStream(data));
-					} catch ( IOException e ) {
-						e.printStackTrace();
-						return;
-					}
-
-					DoubleMatrix next = ImageConverter.convertImageToMatrix(im,
-							true);
-					next = ImageConverter.normalize(next);
-				}
-			});
-
 	public void init() {
+		driver = new NeuralNetworkDriver();
+		
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1010, 400);
@@ -87,7 +74,7 @@ public class NeuralNetworkDriverGUI {
 		JButton startListeningButton = new JButton("Start data listener");
 		startListeningButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.startQueueListener();
+				driver.startCollecting();
 			}
 		});
 		adminBar.add(startListeningButton);
@@ -146,8 +133,7 @@ public class NeuralNetworkDriverGUI {
 
 				new Thread() {
 					public void run() {
-						driver.network.train(driver.X, driver.Y, NUM_CLASSES,
-								LAMBDA, listener, true);
+						driver.trainNeuralNetwork();
 
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {

@@ -7,9 +7,12 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import org.jblas.DoubleMatrix;
+import org.jblas.util.Random;
 
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder.Example;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
 public class NeuralNetworkDriver {
@@ -36,7 +39,17 @@ public class NeuralNetworkDriver {
 			m = ImageConverter.normalize(m);
 			
 			double[] x = m.toArray();
+			
 			// TODO: y
+			Random r = new Random();
+			double[] y = new double[] { r.nextDouble(), r.nextDouble() };
+			
+			Example ex = builder.new Example(x, y);
+			try {
+				builder.addExample(ex);
+			} catch ( DimensionMismatchException e ) {
+				e.printStackTrace();
+			}
 		}
 	};
 	
@@ -45,10 +58,18 @@ public class NeuralNetworkDriver {
 		collector = new NeuralNetworkExampleCollector(dataCallback);
 	}
 
+	public void startCollecting() {
+		collector.startQueueListener();
+	}
+	
 	/**
 	 * Train the neural network using the given sample data.
 	 */
 	public void trainNeuralNetwork() {
 		// Generate X and Y matrices from examples
+	}
+	
+	public class OutputProvider {
+		
 	}
 }
