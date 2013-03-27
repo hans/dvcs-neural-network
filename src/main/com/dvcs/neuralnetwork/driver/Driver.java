@@ -14,9 +14,10 @@ import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.Example;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
-public class NeuralNetworkDriver {
+public class Driver {
 	static final String QUEUE_NAME = "robotData";
 	static final double LAMBDA = 0.75;
 	static final int HIDDEN_LAYER_UNITS = 100;
@@ -25,9 +26,9 @@ public class NeuralNetworkDriver {
 	private static final Logger LOGGER = Logger
 			.getLogger("NeuralNetworkDriver");
 
-	private NeuralNetworkDriverGUI gui;
+	private DriverGUI gui;
 	private NeuralNetwork network;
-	private NeuralNetworkDataCollector collector;
+	private DataCollector collector;
 	private NeuralNetworkBuilder builder;
 
 	private NewDataCallback dataCallback = new NewDataCallback() {
@@ -68,10 +69,10 @@ public class NeuralNetworkDriver {
 		}
 	};
 
-	public NeuralNetworkDriver(NeuralNetworkDriverGUI _gui) {
+	public Driver(DriverGUI _gui) {
 		gui = _gui;
 		builder = new NeuralNetworkBuilder();
-		collector = new NeuralNetworkDataCollector(QUEUE_NAME, dataCallback);
+		collector = new DataCollector(QUEUE_NAME, dataCallback);
 	}
 
 	public boolean isCollecting() {
@@ -101,7 +102,16 @@ public class NeuralNetworkDriver {
 	 * Train the neural network using the given sample data.
 	 */
 	public void trainNeuralNetwork() {
-		// Generate X and Y matrices from examples
+		try {
+			network = builder.buildNetwork(new int[] { HIDDEN_LAYER_UNITS },
+					LAMBDA);
+		} catch ( InsufficientDataException e ) {
+			e.printStackTrace();
+		}
+	}
+
+	public void startFeedForward() {
+
 	}
 
 	public class OutputProvider {

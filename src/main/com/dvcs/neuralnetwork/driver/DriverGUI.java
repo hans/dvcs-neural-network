@@ -22,13 +22,13 @@ import org.jblas.DoubleMatrix;
 import de.jungblut.math.DoubleVector;
 import de.jungblut.math.minimize.MinimizerListener;
 
-public class NeuralNetworkDriverGUI {
+public class DriverGUI {
 
 	static final int NUM_CLASSES = 10;
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
 			"6", "7", "8", "9", "0" };
 
-	NeuralNetworkDriver driver;
+	Driver driver;
 
 	JFrame frame;
 	MatrixImageApplet applet;
@@ -45,7 +45,7 @@ public class NeuralNetworkDriverGUI {
 		LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME)
 				.setLevel(Level.FINEST);
 
-		driver = new NeuralNetworkDriver(this);
+		driver = new Driver(this);
 
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -82,6 +82,9 @@ public class NeuralNetworkDriverGUI {
 		final JButton buildNetworkButton = new JButton("Build neural network");
 		buildNetworkButton.setEnabled(false);
 		
+		final JButton feedForwardButton = new JButton("Start feedforward");
+		feedForwardButton.setEnabled(false);
+		
 		listeningToggleButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if ( driver.isCollecting() ) {
@@ -103,6 +106,13 @@ public class NeuralNetworkDriverGUI {
 		buildNetworkButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				driver.trainNeuralNetwork();
+				feedForwardButton.setEnabled(true);
+			}
+		});
+		
+		feedForwardButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				driver.startFeedForward();
 			}
 		});
 		
@@ -238,7 +248,7 @@ public class NeuralNetworkDriverGUI {
 	}
 
 	public static void main(String[] args) {
-		new NeuralNetworkDriverGUI().init();
+		new DriverGUI().init();
 	}
 
 }
