@@ -10,11 +10,11 @@ import javax.imageio.ImageIO;
 import org.jblas.DoubleMatrix;
 import org.jblas.util.Random;
 
+import com.dvcs.neuralnetwork.Example;
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
-import com.dvcs.neuralnetwork.NeuralNetworkBuilder.Example;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
@@ -42,7 +42,7 @@ public class Driver {
 			// TODO: y
 			double[] y = new double[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-			Example ex = builder.new Example(x, y);
+			Example ex = new Example(x, y);
 			try {
 				builder.addExample(ex);
 			} catch ( DimensionMismatchException e ) {
