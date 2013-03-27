@@ -77,14 +77,19 @@ public class NeuralNetworkDriverGUI {
 		JPanel adminBar = new JPanel();
 		adminBar.setLayout(new BoxLayout(adminBar, BoxLayout.X_AXIS));
 
-		final JButton startListeningButton = new JButton("Start collecting");
-		startListeningButton.addActionListener(new ActionListener() {
+		final JButton listeningToggleButton = new JButton("Start collecting");
+		listeningToggleButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.startCollecting();
-				startListeningButton.setEnabled(false);
+				if ( driver.isCollecting() ) {
+					driver.stopCollecting();
+					listeningToggleButton.setText("Start collecting");
+				} else {
+					driver.startCollecting();
+					listeningToggleButton.setText("Stop collecting");
+				}
 			}
 		});
-		adminBar.add(startListeningButton);
+		adminBar.add(listeningToggleButton);
 
 		return adminBar;
 	}

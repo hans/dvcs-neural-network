@@ -72,11 +72,21 @@ public class NeuralNetworkDriver {
 		builder = new NeuralNetworkBuilder();
 		collector = new NeuralNetworkExampleCollector(dataCallback);
 	}
+	
+	public boolean isCollecting() {
+		return collector.isListening();
+	}
 
 	public void startCollecting() {
 		LOGGER.info("Beginning data collection");
 
 		collector.startQueueListener();
+	}
+	
+	public void stopCollecting() {
+		LOGGER.info("Ending data collection");
+		
+		collector.stopQueueListener();
 	}
 
 	/**

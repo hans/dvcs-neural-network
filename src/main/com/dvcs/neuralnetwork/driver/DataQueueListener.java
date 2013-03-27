@@ -7,16 +7,20 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.QueueingConsumer.Delivery;
 
-public class DataQueueListener implements Runnable {
+public class DataQueueListener extends Thread {
 
 	private static final String DEFAULT_HOST_NAME = "localhost";
+	private static final long DELIVERY_TIMEOUT = 2000;
 	
 	private static final Logger LOGGER = Logger.getLogger("DataQueueListener");
 
 	private String host;
 	private String queueName;
 	private NewDataCallback callback;
+	
+	private volatile boolean shouldStop = false;
 	
 	public interface NewDataCallback {
 		public void receivedData(byte[] data);
@@ -47,15 +51,26 @@ public class DataQueueListener implements Runnable {
 			
 			LOGGER.info("Queue listener up");
 			
-			while ( true ) {
-				QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-				callback.receivedData(delivery.getBody());
+			while ( !shouldStop ) {
+				Delivery delivery = consumer.nextDelivery(DELIVERY_TIMEOUT);
+				
+				if ( delivery != null )
+					callback.receivedData(delivery.getBody());
 			}
+						
+			LOGGER.info("Queue listener down");
+			
+			channel.close();
+			connection.close();
 		} catch ( InterruptedException e ) {
 			e.printStackTrace();
 		} catch ( IOException e ) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void stopListening() {
+		shouldStop = true;
 	}
 
 }
