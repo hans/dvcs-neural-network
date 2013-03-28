@@ -7,20 +7,22 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import org.encog.ml.data.MLData;
+import org.encog.ml.data.basic.BasicMLData;
+import org.encog.neural.networks.BasicNetwork;
 import org.jblas.DoubleMatrix;
-import org.jblas.util.Random;
 
+import com.dvcs.neuralnetwork.EncogNetworkBuilder;
 import com.dvcs.neuralnetwork.Example;
 import com.dvcs.neuralnetwork.NeuralNetwork;
-import com.dvcs.neuralnetwork.NeuralNetwork.ForwardPropagationResult;
-import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 
 public class Driver {
 	static final String QUEUE_NAME = "robotData";
-	static final double LAMBDA = 0.75;
+	static final double LEARNING_RATE = 0.75;
+	static final double MOMENTUM = 0.6;
 	static final int HIDDEN_LAYER_UNITS = 100;
 	static final int OUTPUT_LAYER_UNITS = 10;
 
@@ -28,10 +30,10 @@ public class Driver {
 			.getLogger("NeuralNetworkDriver");
 
 	private DriverGUI gui;
-	private NeuralNetwork network;
+	private BasicNetwork network;
 	private DataCollector collector;
 	private DataCollector predictor;
-	private NeuralNetworkBuilder builder;
+	private EncogNetworkBuilder builder;
 
 	private NewDataCallback dataCollectorCallback = new NewDataCallback() {
 		public void receivedData(byte[] data) {
@@ -63,28 +65,23 @@ public class Driver {
 
 			DoubleMatrix m = parseImageData(data);
 
-			// Build a row vector
-			int length = m.getRows() * m.getColumns();
-			DoubleMatrix x = new DoubleMatrix(1, length, m.toArray());
-
 			long start = System.nanoTime();
 
-			ForwardPropagationResult fResult = network.feedForward(x);
-			double[] outputUnits = fResult.getOutputLayer().getColumn(0)
-					.toArray();
-			int predictedClass = NeuralNetwork.maxIndex(outputUnits);
+			double[] output = network.compute(new BasicMLData(m.toArray()))
+					.getData();
+			int predictedClass = NeuralNetwork.maxIndex(output);
 
 			long end = System.nanoTime();
+			long diff = end - start;
 
 			gui.loadImageMatrix(m);
-			gui.displayPropagationResult(outputUnits, predictedClass, start
-					- end);
+			gui.displayPropagationResult(output, predictedClass, diff);
 		}
 	};
 
 	public Driver(DriverGUI _gui) {
 		gui = _gui;
-		builder = new NeuralNetworkBuilder();
+		builder = new EncogNetworkBuilder();
 		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
 		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
 	}
@@ -117,8 +114,8 @@ public class Driver {
 	 */
 	public void trainNeuralNetwork() {
 		try {
-			network = builder.buildNetwork(new int[] { HIDDEN_LAYER_UNITS },
-					LAMBDA);
+			network = builder.buildEncogNetwork(
+					new int[] { HIDDEN_LAYER_UNITS }, LEARNING_RATE, MOMENTUM);
 		} catch ( InsufficientDataException e ) {
 			e.printStackTrace();
 		}
@@ -129,10 +126,10 @@ public class Driver {
 
 		predictor.startQueueListener();
 	}
-	
+
 	public void stopFeedForward() {
 		LOGGER.info("Ending feedforward processing");
-		
+
 		predictor.stopQueueListener();
 	}
 

@@ -17,7 +17,7 @@ import org.jblas.DoubleMatrix;
  */
 public class NeuralNetworkBuilder {
 
-	private List<Example> examples;
+	protected List<Example> examples;
 
 	int inputLayerSize;
 	int outputLayerSize;
