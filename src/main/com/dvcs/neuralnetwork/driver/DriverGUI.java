@@ -19,6 +19,8 @@ import javax.swing.SwingUtilities;
 
 import org.jblas.DoubleMatrix;
 
+import com.dvcs.neuralnetwork.driver.Driver.OutputProvider;
+
 import de.jungblut.math.DoubleVector;
 import de.jungblut.math.minimize.MinimizerListener;
 
@@ -39,13 +41,20 @@ public class DriverGUI {
 
 	JPanel trainingSidebar;
 	JLabel costLabel;
+	
+	OutputProvider outputProvider = new OutputProvider() {
+		public double[] getOutput() {
+			// TODO: Real output
+			return new double[] { 1, 2, 3 };
+		}
+	};
 
 	public void init() {
 		// Debug all
 		LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME)
 				.setLevel(Level.FINEST);
 
-		driver = new Driver(this);
+		driver = new Driver(this, outputProvider);
 
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

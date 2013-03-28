@@ -30,6 +30,8 @@ public class Driver {
 			.getLogger("NeuralNetworkDriver");
 
 	private DriverGUI gui;
+	private OutputProvider outputProvider;
+	
 	private BasicNetwork network;
 	private DataCollector collector;
 	private DataCollector predictor;
@@ -40,9 +42,7 @@ public class Driver {
 			DoubleMatrix m = parseImageData(data);
 
 			double[] x = m.toArray();
-
-			// TODO: y
-			double[] y = new double[] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			double[] y = outputProvider.getOutput();
 
 			Example ex = new Example(x, y);
 			try {
@@ -79,8 +79,10 @@ public class Driver {
 		}
 	};
 
-	public Driver(DriverGUI _gui) {
+	public Driver(DriverGUI _gui, OutputProvider _outputProvider) {
 		gui = _gui;
+		outputProvider = _outputProvider;
+		
 		builder = new EncogNetworkBuilder();
 		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
 		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
@@ -155,7 +157,7 @@ public class Driver {
 		return m;
 	}
 
-	public class OutputProvider {
-
+	public interface OutputProvider {
+		public double[] getOutput();
 	}
 }
