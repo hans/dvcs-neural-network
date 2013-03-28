@@ -24,7 +24,7 @@ public class Driver {
 	static final double LEARNING_RATE = 0.75;
 	static final double MOMENTUM = 0.6;
 	static final int HIDDEN_LAYER_UNITS = 100;
-	static final int OUTPUT_LAYER_UNITS = 10;
+	static final int OUTPUT_LAYER_UNITS = 3;
 
 	private static final Logger LOGGER = Logger
 			.getLogger("NeuralNetworkDriver");

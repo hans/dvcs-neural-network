@@ -29,8 +29,7 @@ public class DriverOutputManager implements OutputProvider {
 	
 	@Override
 	public double[] getOutput() {
-		// TODO Auto-generated method stub
-		return null;
+		return output;
 	}
 
 }

@@ -27,9 +27,8 @@ import de.jungblut.math.minimize.MinimizerListener;
 
 public class DriverGUI implements KeyEventDispatcher {
 
-	static final int NUM_CLASSES = 10;
-	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
-			"6", "7", "8", "9", "0" };
+	static final int NUM_CLASSES = 3;
+	static final String[] classLabels = new String[] { "Left", "Right", "Up" };
 
 	Driver driver;
 	DriverOutputManager outputManager;
@@ -68,8 +67,9 @@ public class DriverGUI implements KeyEventDispatcher {
 		frame.add(mainPanel);
 
 		frame.setVisible(true);
-		
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+
+		KeyboardFocusManager.getCurrentKeyboardFocusManager()
+				.addKeyEventDispatcher(this);
 	}
 
 	private JPanel initStatusPanel() {
@@ -221,6 +221,10 @@ public class DriverGUI implements KeyEventDispatcher {
 		predictionLabel.setText(classLabels[predictedClass] + " ("
 				+ microseconds + " micros)");
 
+		updateClassBars(outputUnits);
+	}
+	
+	private void updateClassBars(double[] outputUnits) {
 		for ( int i = 0; i < outputUnits.length; i++ ) {
 			classBars[i].setValue((int) (outputUnits[i] * 1000));
 		}
@@ -267,8 +271,8 @@ public class DriverGUI implements KeyEventDispatcher {
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		boolean enabled = e.getID() == KeyEvent.KEY_PRESSED;
-		
-		switch (e.getKeyCode()) {
+
+		switch ( e.getKeyCode() ) {
 		case KeyEvent.VK_LEFT:
 			outputManager.setLeftArrowEnabled(enabled);
 			break;
@@ -280,6 +284,8 @@ public class DriverGUI implements KeyEventDispatcher {
 			break;
 		}
 		
+		updateClassBars(outputManager.getOutput());
+
 		return true;
 	}
 
