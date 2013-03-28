@@ -230,29 +230,6 @@ public class DriverGUI implements KeyEventDispatcher {
 		}
 	}
 
-	// private void nextExample() {
-	// // Pick a random example
-	// int i = (int) Math.round(Math.random() * X.getRows());
-	//
-	// // Build a DoubleMatrix row vector
-	// DoubleMatrix x = X.getRow(i);
-	//
-	// // Benchmark
-	// long start = System.nanoTime();
-	//
-	// // Get the output layer (just a column vector)
-	// ForwardPropagationResult fResult = network.feedForward(x);
-	// double[] units = fResult.getOutputLayer().getColumn(0).toArray();
-	// int predictedClass = NeuralNetwork.maxIndex(units);
-	// long end = System.nanoTime();
-	//
-	// updateSidebar(units, predictedClass, end - start);
-	//
-	// // Show
-	// DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
-	// applet.setImage(image);
-	// }
-
 	void displayPropagationResult(double[] outputUnits, int predictedClass,
 			long time) {
 		updateSidebar(outputUnits, predictedClass, time);
