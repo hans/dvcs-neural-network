@@ -2,8 +2,11 @@ package com.dvcs.neuralnetwork.driver;
 
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -19,18 +22,17 @@ import javax.swing.SwingUtilities;
 
 import org.jblas.DoubleMatrix;
 
-import com.dvcs.neuralnetwork.driver.Driver.OutputProvider;
-
 import de.jungblut.math.DoubleVector;
 import de.jungblut.math.minimize.MinimizerListener;
 
-public class DriverGUI {
+public class DriverGUI implements KeyEventDispatcher {
 
 	static final int NUM_CLASSES = 10;
 	static final String[] classLabels = new String[] { "1", "2", "3", "4", "5",
 			"6", "7", "8", "9", "0" };
 
 	Driver driver;
+	DriverOutputManager outputManager;
 
 	JFrame frame;
 	MatrixImageApplet applet;
@@ -41,20 +43,14 @@ public class DriverGUI {
 
 	JPanel trainingSidebar;
 	JLabel costLabel;
-	
-	OutputProvider outputProvider = new OutputProvider() {
-		public double[] getOutput() {
-			// TODO: Real output
-			return new double[] { 1, 2, 3 };
-		}
-	};
 
 	public void init() {
 		// Debug all
 		LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME)
 				.setLevel(Level.FINEST);
 
-		driver = new Driver(this, outputProvider);
+		outputManager = new DriverOutputManager();
+		driver = new Driver(this, outputManager);
 
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,6 +68,8 @@ public class DriverGUI {
 		frame.add(mainPanel);
 
 		frame.setVisible(true);
+		
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
 	}
 
 	private JPanel initStatusPanel() {
@@ -87,19 +85,19 @@ public class DriverGUI {
 		adminBar.setLayout(new BoxLayout(adminBar, BoxLayout.X_AXIS));
 
 		final JButton listeningToggleButton = new JButton("Start collecting");
-		
+
 		final JButton buildNetworkButton = new JButton("Build neural network");
 		buildNetworkButton.setEnabled(false);
-		
+
 		final JButton feedForwardButton = new JButton("Start feedforward");
 		feedForwardButton.setEnabled(false);
-		
+
 		listeningToggleButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if ( driver.isCollecting() ) {
 					driver.stopCollecting();
 					listeningToggleButton.setText("Start collecting");
-					
+
 					if ( driver.hasSufficientData() ) {
 						buildNetworkButton.setEnabled(true);
 					} else {
@@ -111,20 +109,20 @@ public class DriverGUI {
 				}
 			}
 		});
-		
+
 		buildNetworkButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				driver.trainNeuralNetwork();
 				feedForwardButton.setEnabled(true);
 			}
 		});
-		
+
 		feedForwardButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				driver.startFeedForward();
 			}
 		});
-		
+
 		adminBar.add(listeningToggleButton);
 		adminBar.add(buildNetworkButton);
 		adminBar.add(feedForwardButton);
@@ -250,8 +248,9 @@ public class DriverGUI {
 	// DoubleMatrix image = normalize(MatrixTools.reshape(x.toArray()));
 	// applet.setImage(image);
 	// }
-	
-	void displayPropagationResult(double[] outputUnits, int predictedClass, long time) {
+
+	void displayPropagationResult(double[] outputUnits, int predictedClass,
+			long time) {
 		updateSidebar(outputUnits, predictedClass, time);
 	}
 
@@ -263,6 +262,25 @@ public class DriverGUI {
 
 	public static void main(String[] args) {
 		new DriverGUI().init();
+	}
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent e) {
+		boolean enabled = e.getID() == KeyEvent.KEY_PRESSED;
+		
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_LEFT:
+			outputManager.setLeftArrowEnabled(enabled);
+			break;
+		case KeyEvent.VK_RIGHT:
+			outputManager.setRightArrowEnabled(enabled);
+			break;
+		case KeyEvent.VK_UP:
+			outputManager.setUpArrowEnabled(enabled);
+			break;
+		}
+		
+		return true;
 	}
 
 }
