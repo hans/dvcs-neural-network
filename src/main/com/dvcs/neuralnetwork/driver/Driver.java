@@ -72,10 +72,10 @@ public class Driver {
 			int predictedClass = NeuralNetwork.maxIndex(output);
 
 			long end = System.nanoTime();
+			long diff = end - start;
 
 			gui.loadImageMatrix(m);
-			gui.displayPropagationResult(output, predictedClass, start
-					- end);
+			gui.displayPropagationResult(output, predictedClass, diff);
 		}
 	};
 

@@ -33,8 +33,6 @@ public class EncogNetworkBuilderTest {
 		double[] input = new double[] { 3 };
 		double[] output = new double[] { 1 };
 
-		DoubleMatrix inputM = new DoubleMatrix(1, input.length, input);
-
 		addExample(builder, input, output);
 		BasicNetwork net = builder.buildEncogNetwork(new int[] { 1 }, 0.75, 0.6);
 
