@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.networks.BasicNetwork;
 import org.jblas.DoubleMatrix;
@@ -18,6 +17,7 @@ import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
+import com.dvcs.tools.MatrixTools;
 
 public class Driver {
 	static final String QUEUE_NAME = "robotData";
@@ -31,7 +31,7 @@ public class Driver {
 
 	private DriverGUI gui;
 	private OutputProvider outputProvider;
-	
+
 	private BasicNetwork network;
 	private DataCollector collector;
 	private DataCollector predictor;
@@ -39,9 +39,7 @@ public class Driver {
 
 	private NewDataCallback dataCollectorCallback = new NewDataCallback() {
 		public void receivedData(byte[] data) {
-			DoubleMatrix m = parseImageData(data);
-
-			double[] x = m.toArray();
+			double[] x = parseImageData(data);
 			double[] y = outputProvider.getOutput();
 
 			Example ex = new Example(x, y);
@@ -52,7 +50,7 @@ public class Driver {
 			}
 
 			// Display image
-			gui.loadImageMatrix(m);
+			gui.loadImageMatrix(MatrixTools.reshape(x));
 		}
 	};
 
@@ -63,18 +61,17 @@ public class Driver {
 						+ "was built");
 			}
 
-			DoubleMatrix m = parseImageData(data);
+			double[] x = parseImageData(data);
 
 			long start = System.nanoTime();
 
-			double[] output = network.compute(new BasicMLData(m.toArray()))
-					.getData();
+			double[] output = network.compute(new BasicMLData(x)).getData();
 			int predictedClass = NeuralNetwork.maxIndex(output);
 
 			long end = System.nanoTime();
 			long diff = end - start;
 
-			gui.loadImageMatrix(m);
+			gui.loadImageMatrix(MatrixTools.reshape(x));
 			gui.displayPropagationResult(output, predictedClass, diff);
 		}
 	};
@@ -82,7 +79,7 @@ public class Driver {
 	public Driver(DriverGUI _gui, OutputProvider _outputProvider) {
 		gui = _gui;
 		outputProvider = _outputProvider;
-		
+
 		builder = new EncogNetworkBuilder();
 		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
 		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
@@ -135,7 +132,7 @@ public class Driver {
 		predictor.stopQueueListener();
 	}
 
-	private DoubleMatrix parseImageData(byte[] data) {
+	private double[] parseImageData(byte[] data) {
 		BufferedImage im = null;
 		try {
 			im = ImageIO.read(new ByteArrayInputStream(data));
@@ -151,10 +148,7 @@ public class Driver {
 			return null;
 		}
 
-		DoubleMatrix m = ImageConverter.convertImageToMatrix(im, true);
-		m = ImageConverter.normalize(m);
-
-		return m;
+		return ImageConverter.convertImageToArray(im, true, true);
 	}
 
 	public interface OutputProvider {
