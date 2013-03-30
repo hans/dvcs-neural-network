@@ -4,7 +4,7 @@ import com.dvcs.neuralnetwork.driver.Driver.OutputProvider;
 
 public class DriverOutputManager implements OutputProvider {
 
-	private double[] output;
+	private float[] output;
 	
 	private static final int OUTPUT_SIZE = 3;
 	private static final int OUTPUT_INDEX_LEFT_ARROW = 0;
@@ -12,7 +12,7 @@ public class DriverOutputManager implements OutputProvider {
 	private static final int OUTPUT_INDEX_UP_ARROW = 2;
 	
 	public DriverOutputManager() {
-		output = new double[OUTPUT_SIZE];
+		output = new float[OUTPUT_SIZE];
 	}
 	
 	public void setLeftArrowEnabled(boolean l) {
@@ -28,7 +28,7 @@ public class DriverOutputManager implements OutputProvider {
 	}
 	
 	@Override
-	public double[] getOutput() {
+	public float[] getOutput() {
 		return output;
 	}
 

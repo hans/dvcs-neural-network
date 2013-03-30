@@ -48,6 +48,47 @@ public class MatrixTools {
 
 		return ret;
 	}
+	
+	/**
+	 * Reshape a vector into a square matrix. The vector must have a length that
+	 * is a perfect square.
+	 */
+	public static DoubleMatrix reshape(float[] row) {
+		double sq = Math.sqrt(row.length);
+		if ((int) sq != sq) {
+			throw new RuntimeException(
+					"Square reshape method provided with a vector whose length is not a square number");
+		}
+
+		int length = (int) sq;
+		return reshape(row, length, length);
+	}
+
+	/**
+	 * Reshape a vector into a rectangular matrix. Expects the vector to be read
+	 * down columns first, and then over by row.
+	 * 
+	 * @param row
+	 *            Must have a length of `m * n`
+	 * @param m
+	 * @param n
+	 */
+	public static DoubleMatrix reshape(float[] row, int m, int n) {
+		if (m * n != row.length) {
+			throw new RuntimeException(
+					"Reshape method provided with a vector whose length does not match the matrix size parameters");
+		}
+
+		DoubleMatrix ret = new DoubleMatrix(m, n);
+
+		for (int j = 0; j < n; j++) {
+			for (int i = 0; i < m; i++) {
+				ret.put(i, j, row[j * m + i]);
+			}
+		}
+
+		return ret;
+	}
 
 	/**
 	 * Replace each element x of a matrix with 1/(1+e^(-x)).
@@ -94,4 +135,5 @@ public class MatrixTools {
 
 		return sum;
 	}
+
 }

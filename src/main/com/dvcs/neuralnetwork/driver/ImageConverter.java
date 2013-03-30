@@ -8,26 +8,26 @@ import com.dvcs.tools.MatrixTools;
 
 public class ImageConverter {
 
-	public static double[] convertImageToArray(BufferedImage image,
+	public static float[] convertImageToArray(BufferedImage image,
 			boolean makeGrayscale, boolean normalize) {
 		int m = image.getWidth(null);
 		int n = image.getHeight(null);
 
-		double[] ret = new double[m * n];
+		float[] ret = new float[m * n];
 
 		for ( int i = 0; i < m; i++ ) {
 			for ( int j = 0; j < n; j++ ) {
-				double val = image.getRGB(i, j);
+				float val = image.getRGB(i, j);
 				int x = (int) val;
 
 				if ( makeGrayscale ) {
 					int red = (x >> 16) & 0xFF;
 					int blue = (x >> 8) & 0xFF;
 					int green = (x >> 0) & 0xFF;
-					val = (red + blue + green) / 3.0;
+					val = (red + blue + green) / 3.0f;
 				}
 				
-				ret[i * m + j] = normalize ? val / 256.0 : val;
+				ret[i * m + j] = normalize ? val / 256.0f : val;
 			}
 		}
 

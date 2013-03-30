@@ -359,6 +359,25 @@ public class NeuralNetwork {
 
 		return maxIndex;
 	}
+	
+	/**
+	 * Return the index of the element in the array with the maximum value.
+	 */
+	public static int maxIndex(float[] xs) {
+		int maxIndex = -1;
+		float max = Float.MIN_VALUE;
+
+		for (int i = 0; i < xs.length; i++) {
+			float x = xs[i];
+
+			if (x > max) {
+				max = x;
+				maxIndex = i;
+			}
+		}
+
+		return maxIndex;
+	}
 
 	/**
 	 * Add a bias unit to a layer (represented by a matrix). In this layer each

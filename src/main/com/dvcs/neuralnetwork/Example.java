@@ -4,19 +4,19 @@ package com.dvcs.neuralnetwork;
  * Represents a single example to be learned.
  */
 public class Example {
-	private double[] x;
-	private double[] y;
+	private float[] x;
+	private float[] y;
 
-	public Example(double[] x, double[] y) {
+	public Example(float[] x, float[] y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	public double[] getX() {
+	public float[] getX() {
 		return x;
 	}
 
-	public double[] getY() {
+	public float[] getY() {
 		return y;
 	}
 }

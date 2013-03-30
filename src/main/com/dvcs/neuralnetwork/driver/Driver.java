@@ -8,16 +8,15 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 import org.encog.ml.data.basic.BasicMLData;
-import org.encog.neural.networks.BasicNetwork;
-import org.jblas.DoubleMatrix;
 
 import com.dvcs.neuralnetwork.Example;
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
-import com.dvcs.neuralnetwork.ext.EncogNetworkBuilder;
+import com.dvcs.neuralnetwork.ext.FannBuilder;
 import com.dvcs.tools.MatrixTools;
+import com.googlecode.fannj.Fann;
 
 public class Driver {
 	static final String QUEUE_NAME = "robotData";
@@ -32,15 +31,15 @@ public class Driver {
 	private DriverGUI gui;
 	private OutputProvider outputProvider;
 
-	private BasicNetwork network;
+	private Fann network;
 	private DataCollector collector;
 	private DataCollector predictor;
-	private EncogNetworkBuilder builder;
+	private FannBuilder builder;
 
 	private NewDataCallback dataCollectorCallback = new NewDataCallback() {
 		public void receivedData(byte[] data) {
-			double[] x = parseImageData(data);
-			double[] y = outputProvider.getOutput();
+			float[] x = parseImageData(data);
+			float[] y = outputProvider.getOutput();
 
 			Example ex = new Example(x, y);
 			try {
@@ -61,11 +60,11 @@ public class Driver {
 						+ "was built");
 			}
 
-			double[] x = parseImageData(data);
+			float[] x = parseImageData(data);
 
 			long start = System.nanoTime();
 
-			double[] output = network.compute(new BasicMLData(x)).getData();
+			float[] output = network.run(x);
 			int predictedClass = NeuralNetwork.maxIndex(output);
 
 			long end = System.nanoTime();
@@ -80,7 +79,7 @@ public class Driver {
 		gui = _gui;
 		outputProvider = _outputProvider;
 
-		builder = new EncogNetworkBuilder();
+		builder = new FannBuilder();
 		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
 		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
 	}
@@ -113,8 +112,8 @@ public class Driver {
 	 */
 	public void trainNeuralNetwork() {
 		try {
-			network = builder.buildEncogNetwork(
-					new int[] { HIDDEN_LAYER_UNITS }, LEARNING_RATE, MOMENTUM);
+			network = builder
+					.buildFann(new int[] { HIDDEN_LAYER_UNITS });
 		} catch ( InsufficientDataException e ) {
 			e.printStackTrace();
 		}
@@ -132,7 +131,7 @@ public class Driver {
 		predictor.stopQueueListener();
 	}
 
-	private double[] parseImageData(byte[] data) {
+	private float[] parseImageData(byte[] data) {
 		BufferedImage im = null;
 		try {
 			im = ImageIO.read(new ByteArrayInputStream(data));
@@ -152,6 +151,6 @@ public class Driver {
 	}
 
 	public interface OutputProvider {
-		public double[] getOutput();
+		public float[] getOutput();
 	}
 }

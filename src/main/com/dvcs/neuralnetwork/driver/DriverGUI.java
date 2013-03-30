@@ -224,13 +224,36 @@ public class DriverGUI implements KeyEventDispatcher {
 		updateClassBars(outputUnits);
 	}
 	
+	/**
+	 * Display the result of a prediction.
+	 */
+	private void updateSidebar(float[] outputUnits, int predictedClass,
+			long nanoseconds) {
+		long microseconds = nanoseconds / 1000L;
+		predictionLabel.setText(classLabels[predictedClass] + " ("
+				+ microseconds + " micros)");
+
+		updateClassBars(outputUnits);
+	}
+	
 	private void updateClassBars(double[] outputUnits) {
+		for ( int i = 0; i < outputUnits.length; i++ ) {
+			classBars[i].setValue((int) (outputUnits[i] * 1000));
+		}
+	}
+	
+	private void updateClassBars(float[] outputUnits) {
 		for ( int i = 0; i < outputUnits.length; i++ ) {
 			classBars[i].setValue((int) (outputUnits[i] * 1000));
 		}
 	}
 
 	void displayPropagationResult(double[] outputUnits, int predictedClass,
+			long time) {
+		updateSidebar(outputUnits, predictedClass, time);
+	}
+	
+	void displayPropagationResult(float[] outputUnits, int predictedClass,
 			long time) {
 		updateSidebar(outputUnits, predictedClass, time);
 	}
