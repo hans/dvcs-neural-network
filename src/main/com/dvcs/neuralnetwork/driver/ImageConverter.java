@@ -8,28 +8,32 @@ import com.dvcs.tools.MatrixTools;
 
 public class ImageConverter {
 
-	public static DoubleMatrix convertImageToMatrix(BufferedImage image,
-			boolean makeGrayscale) {
+	public static double[] convertImageToArray(BufferedImage image,
+			boolean makeGrayscale, boolean normalize) {
 		int m = image.getWidth(null);
 		int n = image.getHeight(null);
 
-		if (makeGrayscale) {
-			BufferedImage newImage = new BufferedImage(m, n,
-					BufferedImage.TYPE_BYTE_GRAY);
-			newImage.getGraphics().drawImage(image, 0, 0, null);
-			image = newImage;
-		}
+		double[] ret = new double[m * n];
 
-		DoubleMatrix ret = new DoubleMatrix(m, n);
-		for (int i = 0; i < m; i++) {
-			for (int j = 0; j < n; j++) {
-				ret.put(j, i, image.getRGB(i, j));
+		for ( int i = 0; i < m; i++ ) {
+			for ( int j = 0; j < n; j++ ) {
+				double val = image.getRGB(i, j);
+				int x = (int) val;
+
+				if ( makeGrayscale ) {
+					int red = (x >> 16) & 0xFF;
+					int blue = (x >> 8) & 0xFF;
+					int green = (x >> 0) & 0xFF;
+					val = (red + blue + green) / 3.0;
+				}
+				
+				ret[i * m + j] = normalize ? val / 256.0 : val;
 			}
 		}
-		
+
 		return ret;
 	}
-	
+
 	/**
 	 * Normalize all elements of a matrix such that they lie in the range from 0
 	 * to 1 (inclusive on both ends).
