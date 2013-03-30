@@ -1,4 +1,4 @@
-package com.dvcs.neuralnetwork;
+package com.dvcs.neuralnetwork.ext;
 
 import java.util.logging.Logger;
 
@@ -9,6 +9,10 @@ import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.propagation.back.Backpropagation;
+
+import com.dvcs.neuralnetwork.Example;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 
 public class EncogNetworkBuilder extends NeuralNetworkBuilder {
 

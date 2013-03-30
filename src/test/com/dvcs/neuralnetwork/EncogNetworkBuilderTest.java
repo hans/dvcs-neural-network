@@ -11,6 +11,7 @@ import org.junit.runners.JUnit4;
 
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
+import com.dvcs.neuralnetwork.ext.EncogNetworkBuilder;
 
 @RunWith(JUnit4.class)
 public class EncogNetworkBuilderTest {

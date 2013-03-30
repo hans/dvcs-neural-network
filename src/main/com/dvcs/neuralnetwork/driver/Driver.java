@@ -11,12 +11,12 @@ import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.networks.BasicNetwork;
 import org.jblas.DoubleMatrix;
 
-import com.dvcs.neuralnetwork.EncogNetworkBuilder;
 import com.dvcs.neuralnetwork.Example;
 import com.dvcs.neuralnetwork.NeuralNetwork;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
+import com.dvcs.neuralnetwork.ext.EncogNetworkBuilder;
 import com.dvcs.tools.MatrixTools;
 
 public class Driver {

@@ -19,8 +19,8 @@ public class NeuralNetworkBuilder {
 
 	protected List<Example> examples;
 
-	int inputLayerSize;
-	int outputLayerSize;
+	protected int inputLayerSize;
+	protected int outputLayerSize;
 
 	public NeuralNetworkBuilder() {
 		// No network dimensions were specified. They will be inferred when the
