@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
-import org.encog.neural.networks.training.propagation.back.Backpropagation;
-
 import com.dvcs.neuralnetwork.Example;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.googlecode.fannj.ActivationFunction;
@@ -25,7 +22,7 @@ public class FannBuilder extends NeuralNetworkBuilder {
 
 	private static final int MAX_EPOCHS = 500000;
 	private static final int EPOCHS_BETWEEN_REPORTS = 1000;
-	private static final float DESIRED_ERROR = 0.1f;
+	private static final float DESIRED_ERROR = 0.001f;
 
 	public Fann buildFann(int[] hiddenLayerSizes)
 			throws InsufficientDataException {
@@ -77,8 +74,19 @@ public class FannBuilder extends NeuralNetworkBuilder {
 				+ "\n");
 
 		for ( Example ex : examples ) {
-			w.write(StringUtils.join(ex.getX(), " ") + "\n");
-			w.write(StringUtils.join(ex.getY(), " ") + "\n");
+			float[] xs = ex.getX();
+			for ( float x : xs ) {
+				w.write(x + " ");
+			}
+			
+			w.write("\n");
+			
+			float[] ys = ex.getY();
+			for ( float y : ys ) {
+				w.write(y + " ");
+			}
+			
+			w.write("\n");
 		}
 		
 		w.flush();
