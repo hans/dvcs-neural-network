@@ -1,4 +1,4 @@
-package com.dvcs.neuralnetwork;
+package com.dvcs.neuralnetwork.ext;
 
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.networks.BasicNetwork;
@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import com.dvcs.neuralnetwork.Example;
+import com.dvcs.neuralnetwork.NeuralNetworkBuilder;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.DimensionMismatchException;
 import com.dvcs.neuralnetwork.NeuralNetworkBuilder.InsufficientDataException;
 import com.dvcs.neuralnetwork.ext.EncogNetworkBuilder;
