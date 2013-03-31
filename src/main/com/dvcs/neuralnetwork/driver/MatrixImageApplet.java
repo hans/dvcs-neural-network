@@ -30,6 +30,9 @@ public class MatrixImageApplet extends JApplet {
 
 	@Override
 	public void paint(Graphics g) {
+		if ( offscreen == null )
+			return;
+		
 		paint((Graphics2D) offscreen.getGraphics());
 		g.drawImage(offscreen, 0, 0, null);
 	}
