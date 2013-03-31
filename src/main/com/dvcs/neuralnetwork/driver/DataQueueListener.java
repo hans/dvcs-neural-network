@@ -20,7 +20,7 @@ public class DataQueueListener extends Thread {
 	private volatile boolean shouldStop = false;
 
 	public interface NewDataCallback {
-		public void receivedData(byte[] data);
+		public void receivedData(byte[] data, int dataOffset);
 	}
 
 	public DataQueueListener(NewDataCallback callback) {
@@ -33,6 +33,10 @@ public class DataQueueListener extends Thread {
 	}
 
 	public void run() {
+		// ZMQ data will come prefixed with the channel name, so any consumers
+		// need to start reading at an offset.
+		int dataOffset = (ZMQ_SUB_CHANNEL + " ").getBytes().length;
+
 		Context context = ZMQ.context(ZMQ_THREADS);
 
 		Socket client = context.socket(ZMQ.SUB);
@@ -45,8 +49,7 @@ public class DataQueueListener extends Thread {
 			byte[] data = client.recv(ZMQ.DONTWAIT);
 
 			if ( data != null ) {
-				data = removeChannelLabel(data);
-				callback.receivedData(data);
+				callback.receivedData(data, dataOffset);
 			}
 
 			try {
@@ -64,18 +67,6 @@ public class DataQueueListener extends Thread {
 
 	public void stopListening() {
 		shouldStop = true;
-	}
-
-	/**
-	 * ZMQ pub/sub messages arrive with the publishing channel (and a single
-	 * space) preceding the actual data. Strip this label.
-	 */
-	private byte[] removeChannelLabel(byte[] data) {
-		byte[] label = (ZMQ_SUB_CHANNEL + " ").getBytes();
-		byte[] ret = new byte[data.length - label.length];
-
-		System.arraycopy(data, label.length, ret, 0, data.length - label.length);
-		return ret;
 	}
 
 }

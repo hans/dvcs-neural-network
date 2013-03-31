@@ -37,8 +37,8 @@ public class Driver {
 	private EncogNetworkBuilder builder;
 
 	private NewDataCallback dataCollectorCallback = new NewDataCallback() {
-		public void receivedData(byte[] data) {
-			double[] x = parseImageData(data);
+		public void receivedData(byte[] data, int dataOffset) {
+			double[] x = parseImageData(data, dataOffset);
 			double[] y = outputProvider.getOutput();
 
 			Example ex = new Example(x, y);
@@ -54,13 +54,13 @@ public class Driver {
 	};
 
 	private NewDataCallback dataPredictorCallback = new NewDataCallback() {
-		public void receivedData(byte[] data) {
+		public void receivedData(byte[] data, int dataOffset) {
 			if ( network == null ) {
 				LOGGER.severe("Driver asked to make predictions before network"
 						+ "was built");
 			}
 
-			double[] x = parseImageData(data);
+			double[] x = parseImageData(data, dataOffset);
 
 			long start = System.nanoTime();
 
@@ -131,10 +131,13 @@ public class Driver {
 		predictor.stopQueueListener();
 	}
 
-	private double[] parseImageData(byte[] data) {
+	private double[] parseImageData(byte[] data, int dataOffset) {
 		BufferedImage im = null;
 		try {
-			im = ImageIO.read(new ByteArrayInputStream(data));
+			ByteArrayInputStream is = new ByteArrayInputStream(data);
+			is.skip(dataOffset);
+						
+			im = ImageIO.read(is);
 		} catch ( IOException e ) {
 			e.printStackTrace();
 			return null;
