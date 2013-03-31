@@ -9,6 +9,7 @@ import org.zeromq.ZMQ.Socket;
 public class DataQueueListener extends Thread {
 
 	private static final String ZMQ_ADDRESS = "ipc:///tmp/robotData";
+	private static final String ZMQ_SUB_CHANNEL = "main";
 	private static final int ZMQ_THREADS = 1;
 
 	private static final Logger LOGGER = Logger.getLogger("DataQueueListener");
@@ -35,16 +36,19 @@ public class DataQueueListener extends Thread {
 		Context context = ZMQ.context(ZMQ_THREADS);
 
 		Socket client = context.socket(ZMQ.SUB);
-		client.bind(address);
+		client.connect(address);
+		client.subscribe(ZMQ_SUB_CHANNEL.getBytes());
 
 		LOGGER.info("Queue listener up");
-		
+
 		while ( !shouldStop ) {
 			byte[] data = client.recv(ZMQ.DONTWAIT);
-			
-			if ( data != null )
+
+			if ( data != null ) {
+				data = removeChannelLabel(data);
 				callback.receivedData(data);
-			
+			}
+
 			try {
 				sleep(100);
 			} catch ( InterruptedException e ) {
@@ -54,12 +58,24 @@ public class DataQueueListener extends Thread {
 
 		client.disconnect(address);
 		client.close();
-		
+
 		LOGGER.info("Queue listener down");
 	}
 
 	public void stopListening() {
 		shouldStop = true;
+	}
+
+	/**
+	 * ZMQ pub/sub messages arrive with the publishing channel (and a single
+	 * space) preceding the actual data. Strip this label.
+	 */
+	private byte[] removeChannelLabel(byte[] data) {
+		byte[] label = (ZMQ_SUB_CHANNEL + " ").getBytes();
+		byte[] ret = new byte[data.length - label.length];
+
+		System.arraycopy(data, label.length, ret, 0, data.length - label.length);
+		return ret;
 	}
 
 }
