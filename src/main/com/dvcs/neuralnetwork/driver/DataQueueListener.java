@@ -44,7 +44,16 @@ public class DataQueueListener extends Thread {
 			
 			if ( data != null )
 				callback.receivedData(data);
+			
+			try {
+				sleep(100);
+			} catch ( InterruptedException e ) {
+				e.printStackTrace();
+			}
 		}
+
+		client.disconnect(address);
+		client.close();
 		
 		LOGGER.info("Queue listener down");
 	}
