@@ -9,7 +9,6 @@ import javax.imageio.ImageIO;
 
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.networks.BasicNetwork;
-import org.jblas.DoubleMatrix;
 
 import com.dvcs.neuralnetwork.EncogNetworkBuilder;
 import com.dvcs.neuralnetwork.Example;
@@ -20,7 +19,7 @@ import com.dvcs.neuralnetwork.driver.DataQueueListener.NewDataCallback;
 import com.dvcs.tools.MatrixTools;
 
 public class Driver {
-	static final String QUEUE_NAME = "robotData";
+	static final String QUEUE_URI = "ipc:///tmp/robotData";
 	static final double LEARNING_RATE = 0.75;
 	static final double MOMENTUM = 0.6;
 	static final int HIDDEN_LAYER_UNITS = 100;
@@ -81,8 +80,8 @@ public class Driver {
 		outputProvider = _outputProvider;
 
 		builder = new EncogNetworkBuilder();
-		collector = new DataCollector(QUEUE_NAME, dataCollectorCallback);
-		predictor = new DataCollector(QUEUE_NAME, dataPredictorCallback);
+		collector = new DataCollector(QUEUE_URI, dataCollectorCallback);
+		predictor = new DataCollector(QUEUE_URI, dataPredictorCallback);
 	}
 
 	public boolean isCollecting() {
